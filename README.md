@@ -1,2 +1,3 @@
 # spring-boot-base-app
-Spring boot app with basic implementation for a Service with a basic implementation of security using JWT Token
+
+This project is a demo of a Spring Boot project with an in-memory H2 database. It uses the patter CQRS (Command Query Responsibility Segregation) to separate the read and write operations and apply the Single Responsibility Principle.
