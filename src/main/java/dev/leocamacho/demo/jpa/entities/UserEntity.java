@@ -113,6 +113,7 @@ public class UserEntity {
 
         public UserEntity build() {
             UserEntity userEntity = new UserEntity();
+            userEntity.setId(UUID.randomUUID());
             userEntity.setName(name);
             userEntity.setEmail(email);
             userEntity.setPassword(password);

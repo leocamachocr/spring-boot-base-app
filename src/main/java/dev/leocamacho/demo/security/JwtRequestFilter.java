@@ -1,13 +1,14 @@
 package dev.leocamacho.demo.security;
 
 
+import dev.leocamacho.demo.session.Session;
+import dev.leocamacho.demo.session.SessionContextHolder;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.filter.OncePerRequestFilter;
-import dev.leocamacho.demo.session.Session;
-import dev.leocamacho.demo.session.SessionContextHolder;
 
 import java.io.IOException;
 
@@ -15,11 +16,9 @@ import java.io.IOException;
 public class JwtRequestFilter extends OncePerRequestFilter {
     public static final String AUTHORIZATION_HEADER = "Authorization";
     public static final String AUTHORIZATION_PREFIX = "Bearer ";
-    private final JwtProvider jwtProvider;
+    @Autowired
+    private JwtProvider jwtProvider;
 
-    public JwtRequestFilter(String secret) {
-        this.jwtProvider = new JwtProvider(secret);
-    }
 
     @Override
     protected void doFilterInternal(

@@ -36,7 +36,7 @@ public record AuthenticatedUser(
 
     @Override
     public String getPassword() {
-        throw new UnsupportedOperationException();
+        return password;
     }
 
     @Override

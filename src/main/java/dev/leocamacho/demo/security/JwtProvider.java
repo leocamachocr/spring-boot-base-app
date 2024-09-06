@@ -3,6 +3,7 @@ package dev.leocamacho.demo.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import dev.leocamacho.demo.models.AuthenticatedUser;
 
 import javax.crypto.SecretKey;
@@ -19,7 +20,11 @@ public class JwtProvider {
 
     public JwtProvider(String secret) {
         byte[] keyBytes = Base64.getDecoder().decode(secret);
-        key = new SecretKeySpec(keyBytes, Jwts.SIG.HS512.getId());
+        // Ensure the key size is appropriate for HS512
+        if (keyBytes.length < 64) {
+            throw new IllegalArgumentException("The secret key must be at least 64 bytes long for HS512");
+        }
+        key = new SecretKeySpec(keyBytes, SignatureAlgorithm.HS512.getJcaName());
     }
 
     public String getUsernameFromToken(String token) {
@@ -51,11 +56,11 @@ public class JwtProvider {
 
     private String doGenerateToken(Map<String, Object> claims, String subject) {
         return Jwts.builder()
-                .claims(claims)
-                .subject(subject)
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY))
-                .signWith(key).compact();
+                .setClaims(claims)
+                .setSubject(subject)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY))
+                .signWith(key, SignatureAlgorithm.HS512).compact();
     }
 
     public Boolean isValidToken(String token) {

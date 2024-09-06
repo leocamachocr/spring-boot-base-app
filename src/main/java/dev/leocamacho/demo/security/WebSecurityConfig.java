@@ -38,7 +38,7 @@ public class WebSecurityConfig {
         return http
                 .securityMatchers((it) -> it.requestMatchers("/api/private/**"))
                 .authenticationProvider(authenticationProvider())
-                .addFilterBefore(new JwtRequestFilter(secret), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtRequestFilter(), UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement((manager) ->
                         manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
@@ -58,6 +58,10 @@ public class WebSecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    @Bean
+    public JwtProvider jwtProvider() {
+        return new JwtProvider(secret);
+    }
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();

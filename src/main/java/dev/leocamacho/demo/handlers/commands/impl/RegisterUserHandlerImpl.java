@@ -1,5 +1,6 @@
 package dev.leocamacho.demo.handlers.commands.impl;
 
+import dev.leocamacho.demo.handlers.commands.EncodePasswordHandler;
 import dev.leocamacho.demo.handlers.commands.RegisterUserHandler;
 import dev.leocamacho.demo.jpa.entities.UserEntity;
 import dev.leocamacho.demo.jpa.repositories.UserRepository;
@@ -13,6 +14,8 @@ import java.util.List;
 public class RegisterUserHandlerImpl implements RegisterUserHandler {
     @Autowired
     private UserRepository repository;
+    @Autowired
+    private EncodePasswordHandler encodePasswordHandler;
 
     public Result handle(Command command) {
         var check = checkInvalidFields(command);
@@ -27,8 +30,13 @@ public class RegisterUserHandlerImpl implements RegisterUserHandler {
         return UserEntity.UserEntityBuilder.anUserEntity()
                 .withName(command.name())
                 .withEmail(command.email())
-                .withPassword(command.password())
+                .withPassword(encodePassword(command))
                 .build();
+    }
+
+    private String encodePassword(Command command) {
+        var result = encodePasswordHandler.handle(new EncodePasswordHandler.Command(command.password()));
+        return ((EncodePasswordHandler.Result.Success) result).encodedPassword();
     }
 
     private Result.InvalidFields checkInvalidFields(Command command) {
