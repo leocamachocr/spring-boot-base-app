@@ -7,4 +7,5 @@ http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
         <sqlFile path="db/changelog/001-create-users-table.sql"/>
     </changeSet>
 
+
 </databaseChangeLog>

@@ -27,6 +27,7 @@ public class RegisterUserHandlerImpl implements RegisterUserHandler {
     }
 
     private UserEntity toEntity(Command command) {
+
         return UserEntity.UserEntityBuilder.anUserEntity()
                 .withName(command.name())
                 .withEmail(command.email())

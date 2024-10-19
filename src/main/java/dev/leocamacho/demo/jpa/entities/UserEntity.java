@@ -112,6 +112,14 @@ public class UserEntity {
         }
 
         public UserEntity build() {
+            //assert name
+            if (name == null || name.isBlank()) {
+                throw new IllegalArgumentException("Name is required");
+            }
+            //assert email
+            if (email == null || email.isBlank()) {
+                throw new IllegalArgumentException("Email is required");
+            }
             UserEntity userEntity = new UserEntity();
             userEntity.setId(UUID.randomUUID());
             userEntity.setName(name);

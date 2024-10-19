@@ -4,11 +4,9 @@ import dev.leocamacho.demo.api.types.RegisterUserRequest;
 import dev.leocamacho.demo.api.types.Response;
 import dev.leocamacho.demo.handlers.commands.RegisterUserHandler;
 import dev.leocamacho.demo.models.BaseException;
+import dev.leocamacho.demo.models.ErrorCodes;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -27,9 +25,14 @@ public class RegisterUserController {
                 request.password()
         ));
         return switch (result) {
-            case RegisterUserHandler.Result.Success success -> new Response(success.user().getId().toString());
+            case RegisterUserHandler.Result.Success success ->
+                    new Response(success.user().getId().toString());
             case RegisterUserHandler.Result.InvalidFields invalidFields ->
-                    throw BaseException.exceptionBuilder().params(List.of(invalidFields.fields())).build();
+                    throw BaseException.exceptionBuilder()
+                            .params(List.of(invalidFields.fields()))
+                            .code(ErrorCodes.REQUIRED_FIELDS)
+                            .message("Required fields are missing")
+                            .build();
         };
 
 
