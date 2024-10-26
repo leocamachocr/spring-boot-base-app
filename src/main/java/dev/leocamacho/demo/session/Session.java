@@ -37,7 +37,7 @@ public record Session(
             email = claims.get("username").toString();
             roles = Arrays.stream(claims.get("roles").toString().split(","))
                     .toList();
-
+            correlationId = UUID.randomUUID();
             return this;
         }
 
