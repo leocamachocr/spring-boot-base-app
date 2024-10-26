@@ -34,7 +34,7 @@ public record Session(
 
         public Builder fromMap(Map<String, Object> claims) {
             id = UUID.fromString(claims.get("id").toString());
-            email = claims.get("email").toString();
+            email = claims.get("username").toString();
             roles = Arrays.stream(claims.get("roles").toString().split(","))
                     .toList();
 

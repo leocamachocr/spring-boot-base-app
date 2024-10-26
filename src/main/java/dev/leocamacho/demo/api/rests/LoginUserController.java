@@ -1,7 +1,7 @@
 package dev.leocamacho.demo.api.rests;
 
+import dev.leocamacho.demo.api.types.LoginResponse;
 import dev.leocamacho.demo.api.types.LoginUserRequest;
-import dev.leocamacho.demo.api.types.Response;
 import dev.leocamacho.demo.handlers.commands.LoginUserHandler;
 import dev.leocamacho.demo.models.BaseException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,13 +18,14 @@ public class LoginUserController {
     private LoginUserHandler handler;
 
     @PostMapping("/login")
-    public Response login(@RequestBody LoginUserRequest request) {
+    public LoginResponse login(@RequestBody LoginUserRequest request) {
         var result = handler.handle(new LoginUserHandler.Command(
-                request.email(),
+                request.username(),
                 request.password()
         ));
         return switch (result) {
-            case LoginUserHandler.Result.Success success -> new Response(success.token());
+            case LoginUserHandler.Result.Success success ->
+                    new LoginResponse(success.token(), success.name(), success.email());
             case LoginUserHandler.Result.InvalidCredentials invalidCredentials ->
                     throw BaseException.exceptionBuilder().build();
 

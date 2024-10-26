@@ -36,8 +36,8 @@ public class RegisterUserHandlerTests {
     @Test
     public void registerUserHandlerShouldReturnSuccess() {
         // Given
-        var command = new RegisterUserHandler.Command("Alice", "valid@email.com", "password");
-        when(repository.save(any())).thenReturn(anUserEntity().withEmail("valid@email.com").withName("Alice").withPassword("password").build());
+        var command = new RegisterUserHandler.Command("Alice", "valid@username.com", "password");
+        when(repository.save(any())).thenReturn(anUserEntity().withEmail("valid@username.com").withName("Alice").withPassword("password").build());
         when(encodePasswordHandler.handle(any())).thenReturn(new EncodePasswordHandler.Result.Success("encodedPassword"));
         // When
         var result = registerUserHandler.handle(command);
@@ -48,7 +48,7 @@ public class RegisterUserHandlerTests {
         verify(repository).save(captor.capture());
         assertEquals("Alice", captor.getValue().getName());
         assertEquals("encodedPassword", captor.getValue().getPassword());
-        assertEquals("valid@email.com", captor.getValue().getEmail());
+        assertEquals("valid@username.com", captor.getValue().getEmail());
     }
 
     @Test

@@ -116,7 +116,7 @@ public class UserEntity {
             if (name == null || name.isBlank()) {
                 throw new IllegalArgumentException("Name is required");
             }
-            //assert email
+            //assert username
             if (email == null || email.isBlank()) {
                 throw new IllegalArgumentException("Email is required");
             }

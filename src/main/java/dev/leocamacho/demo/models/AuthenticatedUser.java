@@ -22,7 +22,7 @@ public record AuthenticatedUser(
         Map<String, Object> user = new HashMap<>();
 
         user.put("id", id.toString());
-        user.put("email", getUsername());
+        user.put("username", getUsername());
         user.put("roles", getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority).collect(Collectors.joining(",")));
         return user;
