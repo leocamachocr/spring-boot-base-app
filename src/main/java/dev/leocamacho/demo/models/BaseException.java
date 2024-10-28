@@ -7,17 +7,17 @@ import java.util.List;
 
 public class BaseException extends RuntimeException {
 
-    private final int code;
+    private final ErrorCode code;
     private final List<String> params;
 
     public BaseException(String message) {
 
         super(message);
-        code = ErrorCodes.ERROR_NOT_IDENTIFIED;
+        code = ErrorCode.ERROR_NOT_IDENTIFIED;
         params = Collections.emptyList();
     }
 
-    public BaseException(String message, int code, List<String> params) {
+    public BaseException(String message, ErrorCode code, List<String> params) {
         super(message);
         this.code = code;
 
@@ -29,18 +29,18 @@ public class BaseException extends RuntimeException {
     }
 
     public int getCode() {
-        return code;
+        return code.code();
     }
 
     public static class BusinessExceptionBuilder {
-        private int code;
+        private ErrorCode code;
         private String message;
         private List<String> params;
 
         BusinessExceptionBuilder() {
         }
 
-        public BusinessExceptionBuilder code(int code) {
+        public BusinessExceptionBuilder code(ErrorCode code) {
             this.code = code;
             return this;
         }
@@ -70,7 +70,7 @@ public class BaseException extends RuntimeException {
             if (params == null) {
                 params = Collections.emptyList();
             }
-            return new BaseException(message, code, params);
+            return new BaseException(message == null ? code.message() : message, code, params);
         }
 
         public String toString() {

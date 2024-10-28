@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import static dev.leocamacho.demo.models.ErrorCodes.UNKNOWN_ERROR;
+import static dev.leocamacho.demo.models.ErrorCode.UNKNOWN_ERROR;
 
 @ControllerAdvice
 public class ExceptionManagerController {
@@ -30,10 +30,10 @@ public class ExceptionManagerController {
 
         ErrorResponse response = new ErrorResponse(
                 ex.getMessage(),
-                UNKNOWN_ERROR,
-                //TODO update this for an anonnymous user
+                UNKNOWN_ERROR.code(),
                 SessionContextHolder.getSession() == null ? null : SessionContextHolder.getSession().correlationId()
         );
+        ex.printStackTrace();// TODO update this to a logger
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 }

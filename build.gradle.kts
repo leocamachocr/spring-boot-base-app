@@ -3,6 +3,7 @@ plugins {
     id("org.springframework.boot") version "3.3.2"
     id("io.spring.dependency-management") version "1.1.6"
     checkstyle
+    kotlin("jvm")
 }
 
 group = "dev.leocamacho"
@@ -31,6 +32,10 @@ dependencies {
     testImplementation("com.tngtech.archunit:archunit-junit5:1.3.0")
     testImplementation("io.rest-assured:rest-assured:5.5.0")
     testImplementation("io.rest-assured:json-path:5.5.0")
+    testImplementation ("io.cucumber:cucumber-java:7.20.1")
+    testImplementation ("io.cucumber:cucumber-junit:7.20.1")
+    implementation("io.cucumber:cucumber-picocontainer:7.20.1")
+
 }
 
 tasks.withType<Test> {

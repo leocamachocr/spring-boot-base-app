@@ -23,16 +23,15 @@ public class UserAuthenticationQuery implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) {
         Optional<UserEntity> user = repository.findByEmail(username);
 
-        if (user.isPresent()) {
+        var userEntity = user.orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
             return new AuthenticatedUser(
-                    user.get().getId(),
-                    user.get().getEmail(),
-                    user.get().getPassword(),
+                    userEntity.getId(),
+                    userEntity.getName(),
+                    userEntity.getEmail(),
+                    userEntity.getPassword(),
                     Collections.emptyList()
                     //  user.get().getRoles().stream().map(SimpleGrantedAuthority::new).toList()
             );
-        } else {
-            throw new UsernameNotFoundException("User not found with username: " + username);
-        }
+
     }
 }

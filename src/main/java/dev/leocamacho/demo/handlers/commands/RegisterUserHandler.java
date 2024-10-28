@@ -13,6 +13,9 @@ public interface RegisterUserHandler {
 
         record InvalidFields(String... fields) implements Result {
         }
+        record EmailAlreadyExists() implements Result {
+        }
+
     }
 
     record Command(String name, String email, String password) {}

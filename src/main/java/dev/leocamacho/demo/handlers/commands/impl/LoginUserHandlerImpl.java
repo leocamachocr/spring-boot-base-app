@@ -21,8 +21,7 @@ public class LoginUserHandlerImpl implements LoginUserHandler {
     public Result handle(Command command) {
         Authentication authentication = authenticate(command);
         AuthenticatedUser user = (AuthenticatedUser) authentication.getPrincipal();
-        // TODO update username and email
-        return new Result.Success(jwtProvider.generateToken(user), user.username(), user.username());
+        return new Result.Success(jwtProvider.generateToken(user), user.name(), user.username());
     }
 
     private Authentication authenticate(Command command) {

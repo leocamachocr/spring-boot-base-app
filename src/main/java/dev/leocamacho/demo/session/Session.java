@@ -1,17 +1,34 @@
 package dev.leocamacho.demo.session;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 
-public record Session(
-        UUID id,
-        String email,
-        List<String> roles,
-        boolean authenticated,
-        UUID correlationId
-) {
+import java.util.*;
+
+public class Session implements Authentication {
+    private UUID id;
+    private String email;
+    private List<String> roles;
+    private boolean authenticated;
+    private UUID correlationId;
+
+    private Session(UUID id, String email, List<String> roles, boolean authenticated, UUID correlationId) {
+        this.id = id;
+        this.email = email;
+        this.roles = roles;
+        this.authenticated = authenticated;
+        this.correlationId = correlationId;
+    }
+
+    public UUID correlationId() {
+        return correlationId;
+    }
+    public UUID id() {
+        return id;
+    }
+    public String email() {
+        return email;
+    }
 
     public static Builder newBuilder() {
         return new Builder();
@@ -23,6 +40,41 @@ public record Session(
 
     public String getRoles() {
         return roles.stream().reduce("", (a, b) -> a + "," + b);
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of();
+    }
+
+    @Override
+    public Object getCredentials() {
+        return null;
+    }
+
+    @Override
+    public Object getDetails() {
+        return this;
+    }
+
+    @Override
+    public Object getPrincipal() {
+        return email;
+    }
+
+    @Override
+    public boolean isAuthenticated() {
+        return authenticated;
+    }
+
+    @Override
+    public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
+
+    }
+
+    @Override
+    public String getName() {
+        return email;
     }
 
     public static class Builder {

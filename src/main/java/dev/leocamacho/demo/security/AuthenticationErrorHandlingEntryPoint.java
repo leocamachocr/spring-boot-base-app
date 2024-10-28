@@ -9,7 +9,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 import dev.leocamacho.demo.api.types.ErrorResponse;
-import dev.leocamacho.demo.models.ErrorCodes;
+import dev.leocamacho.demo.models.ErrorCode;
 import dev.leocamacho.demo.session.SessionContextHolder;
 
 import java.io.IOException;
@@ -27,7 +27,11 @@ public class AuthenticationErrorHandlingEntryPoint implements AuthenticationEntr
             HttpServletResponse response,
             AuthenticationException authException
     ) throws IOException {
-        ErrorResponse errorResponse = new ErrorResponse("Unauthorized", ErrorCodes.UNAUTHORIZED, SessionContextHolder.getSession().correlationId());
+        ErrorResponse errorResponse = new ErrorResponse(
+                "Unauthorized",
+                ErrorCode.UNAUTHORIZED.code(),
+                SessionContextHolder.getSession().correlationId()
+        );
 
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
