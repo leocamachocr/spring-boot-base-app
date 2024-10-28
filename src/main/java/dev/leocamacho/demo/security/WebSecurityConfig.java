@@ -29,16 +29,17 @@ public class WebSecurityConfig {
     @Autowired
     private UserDetailsService jwtUserDetailsService;
 
+
     @Value("${jwt.secret}")
     private String secret;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,JwtRequestFilter requestFilter) throws Exception {
 
         return http
                 .securityMatchers((it) -> it.requestMatchers("/api/private/**"))
                 .authenticationProvider(authenticationProvider())
-                .addFilterBefore(new JwtRequestFilter(), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(requestFilter, UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement((manager) ->
                         manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )

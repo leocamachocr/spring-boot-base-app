@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 public record AuthenticatedUser(
         UUID id,
+        String name,
         String username,
         String password,
         Collection<? extends GrantedAuthority> authorities

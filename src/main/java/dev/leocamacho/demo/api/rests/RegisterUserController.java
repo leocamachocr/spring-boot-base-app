@@ -4,7 +4,7 @@ import dev.leocamacho.demo.api.types.RegisterUserRequest;
 import dev.leocamacho.demo.api.types.Response;
 import dev.leocamacho.demo.handlers.commands.RegisterUserHandler;
 import dev.leocamacho.demo.models.BaseException;
-import dev.leocamacho.demo.models.ErrorCodes;
+import dev.leocamacho.demo.models.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,9 +30,12 @@ public class RegisterUserController {
             case RegisterUserHandler.Result.InvalidFields invalidFields ->
                     throw BaseException.exceptionBuilder()
                             .params(List.of(invalidFields.fields()))
-                            .code(ErrorCodes.REQUIRED_FIELDS)
+                            .code(ErrorCode.REQUIRED_FIELDS)
                             .message("Required fields are missing")
                             .build();
+            case RegisterUserHandler.Result.EmailAlreadyExists ignored -> throw BaseException.exceptionBuilder()
+                    .code(ErrorCode.EMAIL_ALREADY_EXISTS)
+                    .build();
         };
 
 

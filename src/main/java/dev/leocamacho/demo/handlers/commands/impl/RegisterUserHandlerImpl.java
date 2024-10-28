@@ -22,6 +22,9 @@ public class RegisterUserHandlerImpl implements RegisterUserHandler {
         if (check != null) {
             return check;
         }
+        if (repository.findByEmail(command.email()).isPresent()) {
+            return new Result.EmailAlreadyExists();
+        }
         var user = repository.save(toEntity(command));
         return new Result.Success(user);
     }

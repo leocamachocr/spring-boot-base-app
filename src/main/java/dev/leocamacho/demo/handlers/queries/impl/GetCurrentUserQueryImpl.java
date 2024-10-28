@@ -12,6 +12,9 @@ public class GetCurrentUserQueryImpl implements GetCurrentUserQuery {
 
     @Override
     public Result query(String email) {
+        if(email == null) {
+            return new Result.UserNotFound();
+        }
         var user = repository.findByEmail(email);
 
         return user
