@@ -26,7 +26,7 @@ public class AuthenticationSteps {
         this.userApi = userApi;
     }
 
-    @Given("I have a user with the following credentials")
+    @Given("A user with the following credentials")
     public void iHaveAUserWithTheFollowingCredentials(io.cucumber.datatable.DataTable dataTable) {
         var data = getSingleRow(dataTable);
 
@@ -42,7 +42,7 @@ public class AuthenticationSteps {
         scenarioContext.set(request);
     }
 
-    @Given("I am correctly registered")
+    @Given("User is correctly registered")
     public void iAmCorrectlyRegistered() {
         var response = scenarioContext.get(RegisterUserRequest.class);
         assertNotNull(response);
@@ -79,7 +79,7 @@ public class AuthenticationSteps {
         scenarioContext.set(response);
     }
 
-    @Given("I receive a message that the email is already registered")
+    @Given("User receives a message that the email is already registered")
     public void iReceiveAMessageThatTheEmailIsAlreadyRegistered() {
         var response = scenarioContext.get(ErrorResponse.class);
         Assertions.assertNotNull(response);
@@ -87,7 +87,7 @@ public class AuthenticationSteps {
         assertEquals(ErrorCode.EMAIL_ALREADY_EXISTS.message(), response.message());
     }
 
-    @Given("I have the user authenticated")
+    @Given("User is authenticated")
     public void iHaveTheUserAuthenticated() {
         var response = scenarioContext.get(LoginResponse.class);
         var user = userApi.loggedUser().response();
