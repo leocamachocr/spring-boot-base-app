@@ -29,7 +29,7 @@ public class ValueGenerator {
      *     <li>LocalTime: The input string must be in the format HH:mm:ss.</li>
      *     <li>LocalDateTime: The input string must be in the format yyyy-MM-ddTHH:mm:ss.</li>
      *     <li>String: Any other string.</li>
-     *     <li>Reference: The input string must be in the format {$name}, where name is the reference name.</li>
+     *     <li>Reference: The input string must be in the format {$user}, where user is the reference user.</li>
      * </ul>
      *
      * @param input The input string.

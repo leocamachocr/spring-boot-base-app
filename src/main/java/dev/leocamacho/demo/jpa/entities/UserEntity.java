@@ -112,7 +112,7 @@ public class UserEntity {
         }
 
         public UserEntity build() {
-            //assert name
+            //assert user
             if (name == null || name.isBlank()) {
                 throw new IllegalArgumentException("Name is required");
             }

@@ -22,7 +22,8 @@ public class ExceptionManagerController {
         ErrorResponse response = new ErrorResponse(
                 ex.getMessage(),
                 ex.getCode(),
-                SessionContextHolder.getSession().correlationId()
+                SessionContextHolder.getSession().correlationId(),
+                ex.getParams().toArray(new String[0])
         );
         logger.error("A BaseException occurred", ex);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);

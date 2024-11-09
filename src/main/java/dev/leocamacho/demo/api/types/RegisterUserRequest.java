@@ -1,7 +1,7 @@
 package dev.leocamacho.demo.api.types;
 
 public record RegisterUserRequest(
-        String name,
+        String user,
         String email,
         String password
 ) {

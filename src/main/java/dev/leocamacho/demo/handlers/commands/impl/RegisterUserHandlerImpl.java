@@ -47,7 +47,7 @@ public class RegisterUserHandlerImpl implements RegisterUserHandler {
         List<String> invalidFields = new ArrayList<>();
 
         if (command.name() == null || command.name().isBlank()) {
-            invalidFields.add("name");
+            invalidFields.add("user");
         }
         if (command.email() == null || command.email().isBlank()) {
             invalidFields.add("username");

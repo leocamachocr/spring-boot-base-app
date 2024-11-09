@@ -23,6 +23,9 @@ public class BaseException extends RuntimeException {
 
         this.params = params;
     }
+    public List<String> getParams() {
+        return this.params;
+    }
 
     public static BusinessExceptionBuilder exceptionBuilder() {
         return new BusinessExceptionBuilder();

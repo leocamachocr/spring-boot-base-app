@@ -20,7 +20,7 @@ public class RegisterUserController {
     @PostMapping("/register")
     public Response register(@RequestBody RegisterUserRequest request) {
         var result = handler.handle(new RegisterUserHandler.Command(
-                request.name(),
+                request.user(),
                 request.email(),
                 request.password()
         ));

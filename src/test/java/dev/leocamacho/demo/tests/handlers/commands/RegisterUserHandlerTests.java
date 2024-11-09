@@ -61,4 +61,5 @@ public class RegisterUserHandlerTests {
         // Then
         assertEquals(result.getClass(), RegisterUserHandler.Result.InvalidFields.class);
     }
+
 }
