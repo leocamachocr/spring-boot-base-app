@@ -2,6 +2,7 @@ package dev.leocamacho.demo.security;
 
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import dev.leocamacho.demo.models.AuthenticatedUser;
@@ -64,7 +65,14 @@ public class JwtProvider {
     }
 
     public Boolean isValidToken(String token) {
-        return token != null && !isTokenExpired(token);
+        if (token == null) {
+            return false;
+        }
+        try {
+            return !isTokenExpired(token);
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
     }
 
 }
