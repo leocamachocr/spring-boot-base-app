@@ -23,7 +23,8 @@ public class UserAuthenticationQuery implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) {
         Optional<UserEntity> user = repository.findByEmail(username);
 
-        var userEntity = user.orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+        var userEntity = user.orElseThrow(
+                () -> new UsernameNotFoundException("User not found with username: " + username));
             return new AuthenticatedUser(
                     userEntity.getId(),
                     userEntity.getName(),

@@ -13,16 +13,21 @@ import java.util.regex.Pattern;
 public class ValueGenerator {
 
     private static final Random RANDOM = new Random();
-    private static final Map<String, Object> valueMap = new HashMap<>();
+    private static final int VARIABLE_NAME_GROUP = 3;
+    private static final Map<String, Object> VALUE_MAP = new HashMap<>();
 
     /**
      * Generates a value based on the input string.
      * <p>
      * The input string can be one of the following:
      * <ul>
-     *     <li>String: The input string must be in the format {String:4}, where 4 is the length of the string to be generated.</li>
-     *     <li>Long: The input string must be in the format {Long:<4>10}, where <4 is the minimum value and >10 is the maximum value of the long to be generated.</li>
-     *     <li>Date: The input string must be in the format {Date:[+-]10d}, where [+-] is the sign of the days to be added or subtracted from the current date and <days> is the number of days to be added or subtracted.</li>
+     *     <li>String: The input string must be in the format {String:4}, where 4 is the length of the string
+     *     to be generated.</li>
+     *     <li>Long: The input string must be in the format {Long:<4>10}, where <4 is the minimum value and >10
+     *     is the maximum value of the long to be generated.</li>
+     *     <li>Date: The input string must be in the format {Date:[+-]10d}, where [+-] is the sign of the days
+     *     to be added or subtracted from the current date and <days> is the number of days to be added or
+     *     subtracted.</li>
      *     <li>Integer: The input string must be a number.</li>
      *     <li>Long: The input string must be a number followed by the letter 'L'.</li>
      *     <li>LocalDate: The input string must be in the format yyyy-MM-dd.</li>
@@ -78,7 +83,7 @@ public class ValueGenerator {
                     .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
                     .toString();
             if (matcher.group(2) != null) {
-                valueMap.put(matcher.group(2), randomString);
+                VALUE_MAP.put(matcher.group(2), randomString);
             }
             return matcher.replaceFirst(randomString);
         }
@@ -92,8 +97,8 @@ public class ValueGenerator {
                     .limit(length)
                     .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
                     .toString();
-            if (matcher.group(3) != null) {
-                valueMap.put(matcher.group(3), randomString);
+            if (matcher.group(VARIABLE_NAME_GROUP) != null) {
+                VALUE_MAP.put(matcher.group(VARIABLE_NAME_GROUP), randomString);
             }
             return matcher.replaceFirst(randomString);
         }
@@ -121,8 +126,8 @@ public class ValueGenerator {
 
     private static Object getValueFromMap(String input) {
         String key = input.substring(2, input.length() - 1);
-        if (valueMap.containsKey(key)) {
-            return valueMap.get(key);
+        if (VALUE_MAP.containsKey(key)) {
+            return VALUE_MAP.get(key);
         }
         throw new IllegalArgumentException("No value found for key: " + key);
     }

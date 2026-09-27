@@ -60,7 +60,8 @@ public class ArchUnitFacadeConstrains {
     }
 
     public static ArchCondition<JavaClass> haveSpecifiedReturnTypes(String... allowedReturnTypes) {
-        return buildCondition(format("Must have return types of public methods in %s", Arrays.toString(allowedReturnTypes)),
+        return buildCondition(
+                format("Must have return types of public methods in %s", Arrays.toString(allowedReturnTypes)),
                 (item, events) -> {
                     for (JavaMethod method : item.getMethods()) {
                         if (isPublic(method) && Arrays.stream(allowedReturnTypes).noneMatch(it ->
@@ -81,7 +82,8 @@ public class ArchUnitFacadeConstrains {
     }
 
     public static ArchCondition<JavaClass> haveSpecifiedParameterTypes(String... packageParameters) {
-        return buildCondition(format("Must have parameter types of public methods in %s", Arrays.toString(packageParameters)),
+        return buildCondition(
+                format("Must have parameter types of public methods in %s", Arrays.toString(packageParameters)),
                 (item, events) -> {
                     item.getMethods().stream().filter(ArchUnitFacadeConstrains::isPublic).forEach(method -> {
                         method.getParameterTypes().forEach(param -> {
@@ -103,7 +105,8 @@ public class ArchUnitFacadeConstrains {
 
     @SafeVarargs
     public static ArchCondition<JavaClass> haveSpecifiedMethodAnnotations(Class<? extends Annotation>... annotations) {
-        return buildCondition(format("Must have any of this annotation  in all public methods %s", Arrays.toString(annotations)),
+        return buildCondition(
+                format("Must have any of this annotation  in all public methods %s", Arrays.toString(annotations)),
                 (item, events) -> item.getMethods().forEach(method -> {
                     if (isPublic(method) && !containsAtLeast(method, annotations)) {
                         events.add(violated(
@@ -164,7 +167,7 @@ public class ArchUnitFacadeConstrains {
         return method.getModifiers().stream().anyMatch(modifier -> modifier.name().equals("PUBLIC"));
     }
 
-    public static interface ArchConditionPredicate<T> {
+    public interface ArchConditionPredicate<T> {
         void apply(T item, ConditionEvents events);
     }
 }

@@ -6,7 +6,10 @@ import dev.leocamacho.demo.handlers.commands.RegisterUserHandler;
 import dev.leocamacho.demo.models.BaseException;
 import dev.leocamacho.demo.models.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 

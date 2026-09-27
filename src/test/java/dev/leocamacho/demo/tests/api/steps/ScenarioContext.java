@@ -3,9 +3,10 @@ package dev.leocamacho.demo.tests.api.steps;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ScenarioContext {
-    Map<Class, Map<String, Object>> data = new HashMap<>();
+    private Map<Class, Map<String, Object>> data = new HashMap<>();
 
 
     public <T> void set(T value) {
@@ -43,7 +44,10 @@ public class ScenarioContext {
     }
 
     public <T> Set<T> getAllOfPrefix(String prefix, Class<T> clazz) {
-        return (Set<T>) data.get(clazz).entrySet().stream().filter(e -> e.getKey().startsWith(prefix)).map(Map.Entry::getValue);
+        return data.get(clazz).entrySet().stream()
+                .filter(e -> e.getKey().startsWith(prefix))
+                .map(e -> clazz.cast(e.getValue()))
+                .collect(Collectors.toSet());
     }
 
 

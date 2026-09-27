@@ -17,5 +17,5 @@ public interface RegisterUserHandler {
 
     }
 
-    record Command(String name, String email, String password) {}
+    record Command(String name, String email, String password) { }
 }

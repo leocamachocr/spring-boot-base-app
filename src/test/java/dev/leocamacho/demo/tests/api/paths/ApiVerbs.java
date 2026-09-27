@@ -8,6 +8,7 @@ import io.restassured.specification.RequestSpecification;
 
 
 public class ApiVerbs {
+    private static final int HTTP_OK = 200;
     private static final String DEFAULT_HOST = System.getProperty("host", "http://localhost");
     private static final int DEFAULT_PORT = Integer.parseInt(System.getProperty("port", "8080"));
 
@@ -54,7 +55,7 @@ public class ApiVerbs {
     }
 
     private static <R> ApiResponse<R> processResponse(Response response, Class<R> responseType) {
-        if (response.getStatusCode() == 200) {
+        if (response.getStatusCode() == HTTP_OK) {
             return new ApiResponse<>(response.as(responseType));
         } else {
             return new ApiResponse<>(response.as(ErrorResponse.class));
