@@ -23,6 +23,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Always run `./gradlew build` before declaring a task done — it runs both tests and Checkstyle.
 
+Gradle 8.14 cannot run on JDK 25+; if `JAVA_HOME` points to a newer JDK, run Gradle with a JDK 21 (e.g. `JAVA_HOME=~/.jdks/openjdk-21.0.2`).
+
 ## Architecture
 
 Spring Boot 4 / Java 21 app following **CQRS** with a strict layered architecture enforced at test time by **ArchUnit** (`StructureValidationTests`).
@@ -74,7 +76,10 @@ Feature files support a `{String:N}` placeholder (generates a random N-char stri
 
 ## Checkstyle
 
-Sun coding conventions enforced at severity `error`. Key rules to watch:
-- No star imports, no trailing whitespace, tabs forbidden (use spaces).
+Sun coding conventions enforced at severity `error` (config in `config/checkstyle/checkstyle.xml`). `checkstyleMain` runs before `checkstyleTest`, so a failure in main hides test violations — use `--continue` to see both. Key rules to watch:
+- Max line length is **120** (raised from the default 80).
+- No star imports (including `import static ...*`), no unused imports, files must end with a newline, tabs forbidden (use spaces).
+- `static final` fields must be `UPPER_SNAKE_CASE` — this includes loggers and ArchUnit `@ArchTest` rules. Method names are camelCase with no underscores, test methods included.
+- `NeedBraces` — `if`/`else` always need braces, even on one-liners.
 - `MagicNumber` rule — extract numeric literals to named constants.
 - `TodoComment` rule — no `TODO` comments may remain in submitted code.
