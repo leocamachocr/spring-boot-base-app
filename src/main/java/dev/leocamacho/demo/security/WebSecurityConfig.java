@@ -1,6 +1,5 @@
 package dev.leocamacho.demo.security;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -29,26 +28,19 @@ public class WebSecurityConfig {
     @Autowired
     private UserDetailsService jwtUserDetailsService;
 
-
     @Value("${jwt.secret}")
     private String secret;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http,JwtRequestFilter requestFilter) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtRequestFilter requestFilter) throws Exception {
 
         return http
                 .securityMatchers((it) -> it.requestMatchers("/api/private/**"))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(requestFilter, UsernamePasswordAuthenticationFilter.class)
-                .sessionManagement((manager) ->
-                        manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-                .exceptionHandling((exception) ->
-                        exception.authenticationEntryPoint(authenticationEntryPoint)
-                )
-                .authorizeHttpRequests((request) ->
-                        request.anyRequest().authenticated()
-                )
+                .sessionManagement((manager) -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling((exception) -> exception.authenticationEntryPoint(authenticationEntryPoint))
+                .authorizeHttpRequests((request) -> request.anyRequest().authenticated())
                 .cors((a) -> {
                 }).csrf(AbstractHttpConfigurer::disable)
                 .build();
@@ -63,10 +55,10 @@ public class WebSecurityConfig {
     public JwtProvider jwtProvider() {
         return new JwtProvider(secret);
     }
+
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(jwtUserDetailsService);
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(jwtUserDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
     }

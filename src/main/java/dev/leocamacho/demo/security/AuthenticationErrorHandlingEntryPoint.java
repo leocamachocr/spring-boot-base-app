@@ -1,6 +1,6 @@
 package dev.leocamacho.demo.security;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,13 +25,11 @@ public class AuthenticationErrorHandlingEntryPoint implements AuthenticationEntr
     public void commence(
             HttpServletRequest request,
             HttpServletResponse response,
-            AuthenticationException authException
-    ) throws IOException {
+            AuthenticationException authException) throws IOException {
         ErrorResponse errorResponse = new ErrorResponse(
                 "Unauthorized",
                 ErrorCode.UNAUTHORIZED.code(),
-                SessionContextHolder.getSession().correlationId()
-        );
+                SessionContextHolder.getSession().correlationId());
 
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
