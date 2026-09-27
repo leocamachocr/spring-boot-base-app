@@ -3,7 +3,7 @@
 ## Core Principles
 
 ### I. Reference Architecture (NON-NEGOTIABLE)
-`docs/ARQUITECTURA.md` is the target architecture. Every spec, plan and implementation follows it; plans cite the
+`docs/ARCHITECTURE.md` is the target architecture. Every spec, plan and implementation follows it; plans cite the
 sections they rely on and justify any deviation in the Complexity Tracking table.
 - Top-level packages: `api` (`controllers`, `request`, `responses`), `handlers` (`commands`, `queries`),
   `providers`, `persistence` (`model`, `repositories`) and `exception`. `security` and `session` are cross-cutting
@@ -81,7 +81,7 @@ may be approved (`speckit:approved`); after it lands, this section is removed in
 
 ## Governance
 
-This constitution takes precedence over other practices for spec-driven work; `docs/ARQUITECTURA.md` details the
+This constitution takes precedence over other practices for spec-driven work; `docs/ARCHITECTURE.md` details the
 architecture it mandates and `CLAUDE.md` holds the detailed runtime guidance (commands, testing). Plans MUST
 include a constitution check and justify any deviation. Amendments are made through a PR that updates this file,
 bumps the version (MAJOR: principle removed or redefined; MINOR: principle or section added; PATCH:
