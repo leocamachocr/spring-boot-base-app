@@ -93,7 +93,7 @@ Sun coding conventions enforced at severity `error` (config in `config/checkstyl
 
 Features are built with GitHub Spec Kit (`.specify/`, skills `.claude/skills/speckit-*`). Principles in `.specify/memory/constitution.md`; specs live in `specs/<NNN>-<short-name>/` where `NNN` is the GitHub issue number.
 
-Issues are processed by `/speckit-issue <N|next>`, driven by labels: `speckit` (queue spec + plan) → `speckit:awaiting-approval` → human adds `speckit:approved` → tasks + implementation + PR → `speckit:review`. Questions go to the issue (`speckit:needs-info`); errors set `speckit:failed`. A local scheduled task runs `/speckit-issue next` from a dedicated git worktree so it never touches the main working copy.
+Issues are processed by `/speckit-issue <N|next>`, driven by labels: `speckit` (queue spec + plan) → `speckit:awaiting-approval` → human adds `speckit:approved` → tasks + implementation + PR → `speckit:review`. Questions go to the issue (`speckit:needs-info`); errors set `speckit:failed`. The skill is run manually (no scheduler): it needs a clean working tree and switches branches, so running it from a separate git worktree keeps the main working copy untouched. It never asks in chat — questions and status always go to the issue.
 
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
