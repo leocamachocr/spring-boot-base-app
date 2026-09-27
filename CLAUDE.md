@@ -33,6 +33,8 @@ Gradle 8.14 cannot run on JDK 25+; if `JAVA_HOME` points to a newer JDK, run Gra
 
 Spring Boot 4 / Java 21 app following **CQRS** with a strict layered architecture enforced at test time by **ArchUnit** (`StructureValidationTests`).
 
+**Target architecture:** `docs/ARQUITECTURA.md` (mandated by the constitution, principle I). The sections below describe the *current* legacy layout, which issue #5 migrates to the reference (`api.controllers/request/responses`, `persistence`, `providers`, `exception`, no JPA entities in `Result`s). New work follows the reference; until #5 is merged no other issue is approved.
+
 ### Layer rules (enforced)
 ```
 api (rests, types, exceptions)
