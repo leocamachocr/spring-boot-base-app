@@ -1,7 +1,7 @@
 plugins {
     java
-    id("org.springframework.boot") version "3.3.2"
-    id("io.spring.dependency-management") version "1.1.6"
+    id("org.springframework.boot") version "4.0.2"
+    id("io.spring.dependency-management") version "1.1.7"
     checkstyle
 }
 
@@ -24,10 +24,12 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-json")
     implementation("org.liquibase:liquibase-core")
     implementation("io.jsonwebtoken:jjwt:0.12.6")
 
     runtimeOnly("com.h2database:h2")
+    runtimeOnly("org.springframework.boot:spring-boot-h2console")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("com.tngtech.archunit:archunit:1.3.0")
     testImplementation("com.tngtech.archunit:archunit-junit5:1.3.0")
