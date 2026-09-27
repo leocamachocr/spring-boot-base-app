@@ -105,7 +105,7 @@ public class ArchUnitFacadeConstrains {
     public static ArchCondition<JavaClass> haveSpecifiedMethodAnnotations(Class<? extends Annotation>... annotations) {
         return buildCondition(format("Must have any of this annotation  in all public methods %s", Arrays.toString(annotations)),
                 (item, events) -> item.getMethods().forEach(method -> {
-                    if (isPublic(method) && containsAtLeast(method, annotations)) {
+                    if (isPublic(method) && !containsAtLeast(method, annotations)) {
                         events.add(violated(
                                 item,
                                 format(

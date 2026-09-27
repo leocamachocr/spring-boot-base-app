@@ -29,7 +29,7 @@ public class StructureValidationTests {
                     .andShould(haveMaxPublicMethods(7))
                     .andShould(haveSpecifiedReturnTypes("api.types"))
                     .andShould(haveSpecifiedParameterTypes("api.types"))
-                    .andShould(haveSpecifiedMethodAnnotations(GetMapping.class, PutMapping.class, DeleteMapping.class, PatchMapping.class, RequestMapping.class))
+                    .andShould(haveSpecifiedMethodAnnotations(GetMapping.class, PostMapping.class, PutMapping.class, DeleteMapping.class, PatchMapping.class, RequestMapping.class))
                     .as("Controller classes should have the specified annotations, methods and parameters");
 
     @ArchTest
