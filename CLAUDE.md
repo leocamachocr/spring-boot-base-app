@@ -88,3 +88,14 @@ Sun coding conventions enforced at severity `error` (config in `config/checkstyl
 - `NeedBraces` — `if`/`else` always need braces, even on one-liners.
 - `MagicNumber` rule — extract numeric literals to named constants.
 - `TodoComment` rule — no `TODO` comments may remain in submitted code.
+
+## Spec-driven workflow (Spec Kit)
+
+Features are built with GitHub Spec Kit (`.specify/`, skills `.claude/skills/speckit-*`). Principles in `.specify/memory/constitution.md`; specs live in `specs/<NNN>-<short-name>/` where `NNN` is the GitHub issue number.
+
+Issues are processed by `/speckit-issue <N|next>`, driven by labels: `speckit` (queue spec + plan) → `speckit:awaiting-approval` → human adds `speckit:approved` → tasks + implementation + PR → `speckit:review`. Questions go to the issue (`speckit:needs-info`); errors set `speckit:failed`. A local scheduled task runs `/speckit-issue next` from a dedicated git worktree so it never touches the main working copy.
+
+<!-- SPECKIT START -->
+For additional context about technologies to be used, project structure,
+shell commands, and other important information, read the current plan
+<!-- SPECKIT END -->
