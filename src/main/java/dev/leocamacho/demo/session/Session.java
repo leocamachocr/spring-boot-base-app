@@ -3,7 +3,11 @@ package dev.leocamacho.demo.session;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class Session implements Authentication {
     private UUID id;
@@ -142,7 +146,9 @@ public class Session implements Authentication {
         }
 
         public Session build() {
-            if (id == null) return buildAnonymous();
+            if (id == null) {
+                return buildAnonymous();
+            }
             validateBasics();
             if (correlationId == null) {
                 correlationId = UUID.randomUUID();

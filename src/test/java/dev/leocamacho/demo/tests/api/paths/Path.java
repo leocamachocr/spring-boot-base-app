@@ -19,14 +19,14 @@ public class Path {
 
     static class Public {
         static class User {
-            static final Path register = new Path("/register", Type.PUBLIC);
-            static final Path login = new Path("/login", Type.PUBLIC);
+            static final Path REGISTER = new Path("/register", Type.PUBLIC);
+            static final Path LOGIN = new Path("/login", Type.PUBLIC);
         }
     }
 
     static class Private {
         static class User {
-            static final Path loggedUser = new Path("/users/current", Type.PRIVATE);
+            static final Path LOGGED_USER = new Path("/users/current", Type.PRIVATE);
         }
     }
 

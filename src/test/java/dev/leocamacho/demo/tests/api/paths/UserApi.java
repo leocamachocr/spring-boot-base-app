@@ -1,6 +1,10 @@
 package dev.leocamacho.demo.tests.api.paths;
 
-import dev.leocamacho.demo.api.types.*;
+import dev.leocamacho.demo.api.types.LoginResponse;
+import dev.leocamacho.demo.api.types.LoginUserRequest;
+import dev.leocamacho.demo.api.types.RegisterUserRequest;
+import dev.leocamacho.demo.api.types.Response;
+import dev.leocamacho.demo.api.types.UserResponse;
 
 public class UserApi {
 
@@ -12,7 +16,7 @@ public class UserApi {
 
     public ApiResponse<Response> registerUser(RegisterUserRequest request) {
         return ApiVerbs.doPostAnonymous(
-                Path.Public.User.register,
+                Path.Public.User.REGISTER,
                 request,
                 Response.class
         );
@@ -20,7 +24,7 @@ public class UserApi {
 
     public ApiResponse<LoginResponse> loginUser(LoginUserRequest request) {
         return ApiVerbs.doPostAnonymous(
-                Path.Public.User.login,
+                Path.Public.User.LOGIN,
                 request,
                 LoginResponse.class
         );
@@ -31,7 +35,7 @@ public class UserApi {
     public ApiResponse<UserResponse> loggedUser() {
         return ApiVerbs.doGet(
                 context,
-                Path.Private.User.loggedUser,
+                Path.Private.User.LOGGED_USER,
                 UserResponse.class
         );
 

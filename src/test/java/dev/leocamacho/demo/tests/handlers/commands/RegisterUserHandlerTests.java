@@ -5,7 +5,6 @@ import dev.leocamacho.demo.handlers.commands.RegisterUserHandler;
 import dev.leocamacho.demo.handlers.commands.impl.RegisterUserHandlerImpl;
 import dev.leocamacho.demo.jpa.entities.UserEntity;
 import dev.leocamacho.demo.jpa.repositories.UserRepository;
-import dev.leocamacho.demo.security.JwtProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -36,15 +35,29 @@ public class RegisterUserHandlerTests {
     @Test
     public void registerUserHandlerShouldReturnSuccess() {
         // Given
-        var command = new RegisterUserHandler.Command("Alice", "valid@username.com", "password");
-        when(repository.save(any())).thenReturn(anUserEntity().withEmail("valid@username.com").withName("Alice").withPassword("password").build());
-        when(encodePasswordHandler.handle(any())).thenReturn(new EncodePasswordHandler.Result.Success("encodedPassword"));
+        var command = new RegisterUserHandler.Command(
+                "Alice",
+                "valid@username.com",
+                "password"
+        );
+        when(repository.save(any()))
+                .thenReturn(anUserEntity().
+                        withEmail("valid@username.com")
+                        .withName("Alice")
+                        .withPassword("password")
+                        .build()
+                );
+        when(encodePasswordHandler.handle(any()))
+                .thenReturn(
+                        new EncodePasswordHandler.Result
+                        .Success("encodedPassword")
+                );
         // When
         var result = registerUserHandler.handle(command);
 
         // Then
+        assertEquals(RegisterUserHandler.Result.Success.class, result.getClass());
         ArgumentCaptor<UserEntity> captor = ArgumentCaptor.forClass(UserEntity.class);
-        assertEquals(result.getClass(), RegisterUserHandler.Result.Success.class);
         verify(repository).save(captor.capture());
         assertEquals("Alice", captor.getValue().getName());
         assertEquals("encodedPassword", captor.getValue().getPassword());
@@ -61,5 +74,6 @@ public class RegisterUserHandlerTests {
         // Then
         assertEquals(result.getClass(), RegisterUserHandler.Result.InvalidFields.class);
     }
+
 
 }

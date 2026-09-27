@@ -2,6 +2,7 @@ package dev.leocamacho.demo.security;
 
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import dev.leocamacho.demo.models.AuthenticatedUser;
@@ -15,13 +16,14 @@ import java.util.function.Function;
 
 public class JwtProvider {
 
+    private static final int MIN_KEY_BYTES = 64;
     public static final long JWT_TOKEN_VALIDITY = 5 * 60 * 60 * 1000;
     private final SecretKey key;
 
     public JwtProvider(String secret) {
         byte[] keyBytes = Base64.getDecoder().decode(secret);
         // Ensure the key size is appropriate for HS512
-        if (keyBytes.length < 64) {
+        if (keyBytes.length < MIN_KEY_BYTES) {
             throw new IllegalArgumentException("The secret key must be at least 64 bytes long for HS512");
         }
         key = new SecretKeySpec(keyBytes, SignatureAlgorithm.HS512.getJcaName());
@@ -64,7 +66,14 @@ public class JwtProvider {
     }
 
     public Boolean isValidToken(String token) {
-        return token != null && !isTokenExpired(token);
+        if (token == null) {
+            return false;
+        }
+        try {
+            return !isTokenExpired(token);
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
     }
 
 }

@@ -12,7 +12,9 @@ import org.junit.jupiter.api.Assertions;
 
 import static dev.leocamacho.demo.tests.api.steps.CucumberAdapters.getSingleRow;
 import static dev.leocamacho.demo.tests.api.steps.CucumberAdapters.mapToInstance;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class AuthenticationSteps {
 

@@ -58,7 +58,9 @@ public class RegisterUserHandlerImpl implements RegisterUserHandler {
 
         if (!invalidFields.isEmpty()) {
             return new Result.InvalidFields(invalidFields.toArray(new String[0]));
-        } else return null;
+        } else {
+            return null;
+        }
 
 
     }

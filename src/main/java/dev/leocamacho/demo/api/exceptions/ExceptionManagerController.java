@@ -14,7 +14,7 @@ import static dev.leocamacho.demo.models.ErrorCode.UNKNOWN_ERROR;
 
 @ControllerAdvice
 public class ExceptionManagerController {
-    private static final Logger logger = LoggerFactory.getLogger(ExceptionManagerController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExceptionManagerController.class);
 
     @ExceptionHandler(BaseException.class)
     public ResponseEntity<ErrorResponse> handleBusinessException(BaseException ex) {
@@ -25,7 +25,7 @@ public class ExceptionManagerController {
                 SessionContextHolder.getSession().correlationId(),
                 ex.getParams().toArray(new String[0])
         );
-        logger.error("A BaseException occurred", ex);
+        LOGGER.error("A BaseException occurred", ex);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
@@ -39,7 +39,7 @@ public class ExceptionManagerController {
                 SessionContextHolder.getSession().correlationId()
         );
 
-        logger.error("An uncontrolled error occurred", ex);
+        LOGGER.error("An uncontrolled error occurred", ex);
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
