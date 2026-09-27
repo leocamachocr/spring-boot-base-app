@@ -33,14 +33,34 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("com.tngtech.archunit:archunit:1.3.0")
     testImplementation("com.tngtech.archunit:archunit-junit5:1.3.0")
-    testImplementation("io.rest-assured:rest-assured:5.5.0")
-    testImplementation("io.rest-assured:json-path:5.5.0")
-    testImplementation ("io.cucumber:cucumber-java:7.20.1")
-    testImplementation ("io.cucumber:cucumber-junit:7.20.1")
-    implementation("io.cucumber:cucumber-picocontainer:7.20.1")
-
+    testImplementation("io.rest-assured:rest-assured:6.0.1")
+    testImplementation("io.rest-assured:json-path:6.0.1")
+    testImplementation("io.cucumber:cucumber-java:7.20.1")
+    testImplementation("io.cucumber:cucumber-junit-platform-engine:7.20.1")
+    testImplementation("io.cucumber:cucumber-picocontainer:7.20.1")
+    testImplementation("org.junit.platform:junit-platform-suite")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
-tasks.withType<Test> {
-    useJUnitPlatform()
+tasks.test {
+    useJUnitPlatform {
+        excludeEngines("junit-platform-suite", "cucumber")
+    }
+}
+
+// Black-box E2E tests against an already running app; not part of `build`.
+// Target with -Dhost=... -Dport=... (defaults: http://localhost:8080).
+val e2eTest by tasks.registering(Test::class) {
+    description = "Runs Cucumber E2E tests against a running instance of the app."
+    group = "verification"
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    useJUnitPlatform {
+        includeEngines("junit-platform-suite")
+    }
+    listOf("host", "port").forEach { key ->
+        System.getProperty(key)?.let { systemProperty(key, it) }
+    }
+    outputs.upToDateWhen { false }
+    shouldRunAfter(tasks.test)
 }
