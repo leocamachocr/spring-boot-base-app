@@ -4,7 +4,6 @@ package dev.leocamacho.demo.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -25,7 +24,7 @@ public class JwtProvider {
         if (keyBytes.length < MIN_KEY_BYTES) {
             throw new IllegalArgumentException("The secret key must be at least 64 bytes long for HS512");
         }
-        key = new SecretKeySpec(keyBytes, SignatureAlgorithm.HS512.getJcaName());
+        key = new SecretKeySpec(keyBytes, "HmacSHA512");
     }
 
     public String getUsernameFromToken(String token) {
@@ -57,11 +56,11 @@ public class JwtProvider {
 
     private String doGenerateToken(Map<String, Object> claims, String subject) {
         return Jwts.builder()
-                .setClaims(claims)
-                .setSubject(subject)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY))
-                .signWith(key, SignatureAlgorithm.HS512).compact();
+                .claims(claims)
+                .subject(subject)
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY))
+                .signWith(key, Jwts.SIG.HS512).compact();
     }
 
     public Boolean isValidToken(String token) {
