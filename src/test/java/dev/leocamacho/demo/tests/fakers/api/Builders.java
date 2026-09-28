@@ -1,6 +1,6 @@
 package dev.leocamacho.demo.tests.fakers.api;
 
-import dev.leocamacho.demo.api.types.RegisterUserRequest;
+import dev.leocamacho.demo.api.request.RegisterUserRequest;
 
 public class Builders {
 

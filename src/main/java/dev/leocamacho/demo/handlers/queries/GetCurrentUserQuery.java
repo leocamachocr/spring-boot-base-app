@@ -1,16 +1,16 @@
 package dev.leocamacho.demo.handlers.queries;
 
-import dev.leocamacho.demo.jpa.entities.UserEntity;
+import java.util.UUID;
 
 public interface GetCurrentUserQuery {
 
     Result query(String email);
 
     sealed interface Result {
-        record Success(UserEntity user) implements Result {
+        record Success(UUID id, String name, String email) implements Result {
         }
 
-        final class UserNotFound implements Result {
+        record UserNotFound() implements Result {
         }
 
     }

@@ -6,9 +6,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import dev.leocamacho.demo.jpa.entities.UserEntity;
-import dev.leocamacho.demo.jpa.repositories.UserRepository;
-import dev.leocamacho.demo.models.AuthenticatedUser;
+import dev.leocamacho.demo.persistence.model.UserEntity;
+import dev.leocamacho.demo.persistence.repositories.UserRepository;
 
 import java.util.Collections;
 import java.util.Optional;

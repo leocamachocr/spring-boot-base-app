@@ -31,35 +31,35 @@ Gradle 8.14 cannot run on JDK 25+; if `JAVA_HOME` points to a newer JDK, run Gra
 
 ## Architecture
 
-Spring Boot 4 / Java 21 app following **CQRS** with a strict layered architecture enforced at test time by **ArchUnit** (`StructureValidationTests`).
-
-**Target architecture:** `docs/ARCHITECTURE.md` (mandated by the constitution, principle I). The sections below describe the *current* legacy layout, which issue #5 migrates to the reference (`api.controllers/request/responses`, `persistence`, `providers`, `exception`, no JPA entities in `Result`s). New work follows the reference; until #5 is merged no other issue is approved.
+Spring Boot 4 / Java 21 app following **CQRS** with a strict layered architecture enforced at test time by **ArchUnit** (`StructureValidationTests`). The reference architecture is `docs/ARCHITECTURE.md` (mandated by the constitution, principle I); the code follows it.
 
 ### Layer rules (enforced)
 ```
-api (rests, types, exceptions)
+api (controllers, request, responses, GlobalExceptionHandler)
   └── handlers (commands, queries)
-        └── repositories (jpa)
+        └── persistence (model, repositories)
 ```
 - `api` may only be accessed by `security` and tests.
 - `handlers` may only be accessed by `api` and tests.
-- `repositories` may only be accessed by `handlers`, `security`, and tests.
+- `persistence` may only be accessed by `handlers`, `security`, and tests.
+- `exception` (`BusinessException`, `ErrorCode`), `security` and `session` are cross-cutting and sit outside the enforced layers. `providers` (external integrations behind interfaces) is created only when a use case needs one.
 
 ### Package conventions (also enforced by ArchUnit)
 | Package | Pattern | Constraints |
 |---|---|---|
-| `api.rests` | `*Controller` | `@RestController` + `@RequestMapping`; ≤7 public methods; params/return types only from `api.types` |
-| `handlers.commands.impl` | `*HandlerImpl` | `@Component`/`@Service`; exactly 1 public method (`handle`); implements its `*Handler` interface; params/return types only from `jpa.entities` or `commands` |
-| `jpa.repositories` | `*Repository` | Must have `@Repository` |
+| `api.controllers` | `*Controller` | `@RestController` + `@RequestMapping`; ≤7 public methods; params only from `api.request`; returns `api.responses` types or `ResponseEntity` |
+| `handlers.commands.impl` | `*HandlerImpl` | `@Component`/`@Service`; exactly 1 public method (`handle`); implements its `*Handler` interface; params only from `commands` |
+| `handlers.commands` / `handlers.queries` | contracts | Must not depend on `persistence` (no entities in `Command`/`Query`/`Result`) |
+| `persistence.repositories` | `*Repository` | Interface extending `JpaRepository`; **no** `@Repository` |
 
 ### Handler pattern
 Each use case has:
 - An **interface** declaring a `Result` sealed interface plus the entry method:
   - Commands (`handlers/commands/`): a `Command` record and `Result handle(Command)`; impl is `*HandlerImpl` in `commands/impl/`.
-  - Queries (`handlers/queries/`): `Result query(...)` with plain params; impl is `*QueryImpl` in `queries/impl/`. The ArchUnit handler rule only covers `commands.impl`, so queries are convention-only.
-- The impl annotated `@Component`. Results typically carry `jpa.entities` (e.g. `UserEntity`); controllers map them to `api.types`.
+  - Queries (`handlers/queries/`): `Result query(...)` with plain params; impl is `*QueryImpl` in `queries/impl/`. The ArchUnit impl rule only covers `commands.impl`, so query impls are convention-only (the no-entities rule covers both).
+- The impl annotated `@Component`. `Result` variants carry their own records (e.g. `Success(UUID id, String name, String email)`); impls map entities to them explicitly — entities never leave the handler.
 
-Controllers pattern-match exhaustively on the `Result` sealed type and throw `BaseException` (built with `BaseException.exceptionBuilder()` + an `ErrorCode`) for error cases; `ExceptionManagerController` converts those to `ErrorResponse`. `models` (`BaseException`, `ErrorCode`, `AuthenticatedUser`) and `session` are shared and sit outside the enforced layers.
+Expected business outcomes (invalid fields, email exists, invalid credentials, user not found) are `Result` variants. Controllers pattern-match exhaustively and return `ResponseEntity`: success → 200 with an `api.responses` DTO, expected errors → 400 with `ErrorResponse.of(ErrorCode, correlationId, params...)`. `BusinessException` (unchecked, `ErrorCode` + Builder) is only for rolling back an operation in progress; `GlobalExceptionHandler` (the single `@RestControllerAdvice`) maps it to 500 and any other `Throwable` to 400 `UNKNOWN_ERROR`.
 
 ### Security
 - Routes under `/api/private/**` require a JWT; routes under `/api/public/**` are open.
@@ -99,5 +99,6 @@ Issues are processed by `/speckit-issue <N|next>`, driven by labels: `speckit` (
 
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
-shell commands, and other important information, read the current plan
+shell commands, and other important information, read the current plan:
+`specs/005-reference-architecture-migration/plan.md`
 <!-- SPECKIT END -->

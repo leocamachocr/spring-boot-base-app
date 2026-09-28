@@ -1,6 +1,6 @@
 package dev.leocamacho.demo.tests.api.paths;
 
-import dev.leocamacho.demo.api.types.ErrorResponse;
+import dev.leocamacho.demo.api.responses.ErrorResponse;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;

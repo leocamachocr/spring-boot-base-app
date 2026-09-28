@@ -1,4 +1,4 @@
-package dev.leocamacho.demo.api.types;
+package dev.leocamacho.demo.api.request;
 
 public record LoginUserRequest(
         String username,

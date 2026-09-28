@@ -1,4 +1,4 @@
-package dev.leocamacho.demo.models;
+package dev.leocamacho.demo.security;
 
 
 import org.springframework.security.core.GrantedAuthority;
