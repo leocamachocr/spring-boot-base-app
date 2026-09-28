@@ -1,17 +1,18 @@
 package dev.leocamacho.demo.handlers.commands;
 
-import dev.leocamacho.demo.jpa.entities.UserEntity;
+import java.util.UUID;
 
 public interface RegisterUserHandler {
 
     Result handle(Command command);
 
     sealed interface Result {
-        record Success(UserEntity user) implements Result {
+        record Success(UUID id) implements Result {
         }
 
         record InvalidFields(String... fields) implements Result {
         }
+
         record EmailAlreadyExists() implements Result {
         }
 

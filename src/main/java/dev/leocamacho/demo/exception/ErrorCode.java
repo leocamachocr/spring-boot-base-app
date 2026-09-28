@@ -1,4 +1,4 @@
-package dev.leocamacho.demo.models;
+package dev.leocamacho.demo.exception;
 
 
 public enum ErrorCode {
@@ -11,7 +11,8 @@ public enum ErrorCode {
     // Security Validations
     UNAUTHORIZED(401, "Unauthorized"),
     INVALID_USER(2001, "Invalid User"),
-    EMAIL_ALREADY_EXISTS(2002, "Email already exists");
+    EMAIL_ALREADY_EXISTS(2002, "Email already exists"),
+    INVALID_CREDENTIALS(2003, "Invalid credentials");
 
     private final int code;
     private final String message;

@@ -8,8 +8,8 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
-import dev.leocamacho.demo.api.types.ErrorResponse;
-import dev.leocamacho.demo.models.ErrorCode;
+import dev.leocamacho.demo.api.responses.ErrorResponse;
+import dev.leocamacho.demo.exception.ErrorCode;
 import dev.leocamacho.demo.session.SessionContextHolder;
 
 import java.io.IOException;

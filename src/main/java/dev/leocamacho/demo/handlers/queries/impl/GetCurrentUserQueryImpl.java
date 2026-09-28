@@ -1,7 +1,7 @@
 package dev.leocamacho.demo.handlers.queries.impl;
 
 import dev.leocamacho.demo.handlers.queries.GetCurrentUserQuery;
-import dev.leocamacho.demo.jpa.repositories.UserRepository;
+import dev.leocamacho.demo.persistence.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -15,10 +15,8 @@ public class GetCurrentUserQueryImpl implements GetCurrentUserQuery {
         if (email == null) {
             return new Result.UserNotFound();
         }
-        var user = repository.findByEmail(email);
-
-        return user
-                .map((it) -> (Result) new Result.Success(it))
+        return repository.findByEmail(email)
+                .map(user -> (Result) new Result.Success(user.getId(), user.getName(), user.getEmail()))
                 .orElseGet(Result.UserNotFound::new);
     }
 }

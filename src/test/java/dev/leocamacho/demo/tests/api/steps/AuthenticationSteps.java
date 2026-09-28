@@ -1,10 +1,10 @@
 package dev.leocamacho.demo.tests.api.steps;
 
-import dev.leocamacho.demo.api.types.ErrorResponse;
-import dev.leocamacho.demo.api.types.LoginResponse;
-import dev.leocamacho.demo.api.types.LoginUserRequest;
-import dev.leocamacho.demo.api.types.RegisterUserRequest;
-import dev.leocamacho.demo.models.ErrorCode;
+import dev.leocamacho.demo.api.responses.ErrorResponse;
+import dev.leocamacho.demo.api.responses.LoginResponse;
+import dev.leocamacho.demo.api.request.LoginUserRequest;
+import dev.leocamacho.demo.api.request.RegisterUserRequest;
+import dev.leocamacho.demo.exception.ErrorCode;
 import dev.leocamacho.demo.tests.api.paths.ApiContext;
 import dev.leocamacho.demo.tests.api.paths.UserApi;
 import io.cucumber.java.en.Given;
@@ -79,6 +79,26 @@ public class AuthenticationSteps {
         );
         var response = userApi.loginUser(request).error();
         scenarioContext.set(response);
+    }
+
+    @Given("User Login with a wrong password")
+    public void userLoginWithAWrongPassword() {
+        var credentials = scenarioContext.get(RegisterUserRequest.class);
+
+        var request = new LoginUserRequest(
+                credentials.email(),
+                credentials.password() + "-wrong"
+        );
+        var response = userApi.loginUser(request).error();
+        scenarioContext.set(response);
+    }
+
+    @Given("User receives a message that the credentials are invalid")
+    public void iReceiveAMessageThatTheCredentialsAreInvalid() {
+        var response = scenarioContext.get(ErrorResponse.class);
+        Assertions.assertNotNull(response);
+        assertEquals(ErrorCode.INVALID_CREDENTIALS.code(), response.code());
+        assertEquals(ErrorCode.INVALID_CREDENTIALS.message(), response.message());
     }
 
     @Given("User receives a message that the email is already registered")

@@ -7,6 +7,7 @@ import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.library.Architectures;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static com.tngtech.archunit.library.Architectures.layeredArchitecture;
 import static dev.leocamacho.demo.tests.structure.ArchUnitFacadeConstrains.haveAnyAnnotations;
 import static dev.leocamacho.demo.tests.structure.ArchUnitFacadeConstrains.haveImplementedFrom;
@@ -32,16 +34,17 @@ import static dev.leocamacho.demo.tests.structure.StructureValidationTests.BASE;
 @AnalyzeClasses(packages = BASE)
 public class StructureValidationTests {
     public static final String BASE = "dev.leocamacho";
+    private static final String APP = "dev.leocamacho.demo";
     private static final int MAX_CONTROLLER_PUBLIC_METHODS = 7;
 
     @ArchTest
     static final ArchRule VALIDATE_CONTROLLER_CLASSES =
             classes().that().haveNameMatching(".*Controller")
-                    .and().resideInAPackage("..api.rests..")
+                    .and().resideInAPackage(APP + ".api.controllers..")
                     .should(haveSpecifiedAnnotations(RestController.class, RequestMapping.class))
                     .andShould(haveMaxPublicMethods(MAX_CONTROLLER_PUBLIC_METHODS))
-                    .andShould(haveSpecifiedReturnTypes("api.types"))
-                    .andShould(haveSpecifiedParameterTypes("api.types"))
+                    .andShould(haveSpecifiedReturnTypes("api.responses", "http.ResponseEntity"))
+                    .andShould(haveSpecifiedParameterTypes("api.request"))
                     .andShould(haveSpecifiedMethodAnnotations(GetMapping.class, PostMapping.class, PutMapping.class,
                             DeleteMapping.class, PatchMapping.class, RequestMapping.class))
                     .as("Controller classes should have the specified annotations, methods and parameters");
@@ -53,16 +56,24 @@ public class StructureValidationTests {
                     .should(haveAnyAnnotations(Component.class, Service.class))
                     .andShould(haveMaxPublicMethods(1))
                     .andShould(haveSpecifiedReturnTypes("commands", "java"))
-                    .andShould(haveSpecifiedParameterTypes("jpa.entities", "commands"))
+                    .andShould(haveSpecifiedParameterTypes("commands"))
                     .andShould(haveImplementedFrom("commands"))
                     .as("Handlers classes should have the specified annotations, methods and parameters");
 
     @ArchTest
+    static final ArchRule VALIDATE_HANDLER_CONTRACTS_WITHOUT_ENTITIES =
+            noClasses().that().resideInAnyPackage(APP + ".handlers.commands", APP + ".handlers.queries")
+                    .should().dependOnClassesThat().resideInAPackage(APP + ".persistence..")
+                    .as("Handler contracts (Command/Query/Result) must not expose persistence classes");
+
+    @ArchTest
     static final ArchRule VALIDATE_REPOSITORIES_CLASSES =
             classes().that().haveNameMatching(".*Repository")
-                    .and().resideInAPackage("..jpa.repositories..")
-                    .should(haveAnyAnnotations(Repository.class))
-                    .as("Repositories classes should have the specified annotations");
+                    .and().resideInAPackage(APP + ".persistence.repositories..")
+                    .should().beInterfaces()
+                    .andShould().beAssignableTo(JpaRepository.class)
+                    .andShould().notBeAnnotatedWith(Repository.class)
+                    .as("Repositories should be Spring Data interfaces without @Repository");
 
 
     @Test
@@ -71,15 +82,15 @@ public class StructureValidationTests {
         JavaClasses jc = new ClassFileImporter().importPackages(BASE);
 
         Architectures.LayeredArchitecture arch = layeredArchitecture().consideringAllDependencies()
-                .layer("api").definedBy("..api.rests..", "..api.types..", "..api.exceptions..")
-                .layer("handlers").definedBy("..handlers.commands..", "..handlers.queries..")
-                .layer("security").definedBy("..security..")
-                .layer("repositories").definedBy("..repositories..")
-                .layer("test").definedBy("..tests..")
+                .layer("api").definedBy(APP + ".api..")
+                .layer("handlers").definedBy(APP + ".handlers..")
+                .layer("security").definedBy(APP + ".security..")
+                .layer("persistence").definedBy(APP + ".persistence..")
+                .layer("test").definedBy(APP + ".tests..")
 
                 .whereLayer("api").mayOnlyBeAccessedByLayers("security", "test")
-                .whereLayer("handlers").mayOnlyBeAccessedByLayers("api",  "test")
-                .whereLayer("repositories").mayOnlyBeAccessedByLayers("handlers", "security", "test");
+                .whereLayer("handlers").mayOnlyBeAccessedByLayers("api", "test")
+                .whereLayer("persistence").mayOnlyBeAccessedByLayers("handlers", "security", "test");
 
         arch.check(jc);
     }

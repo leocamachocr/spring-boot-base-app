@@ -1,6 +1,6 @@
 package dev.leocamacho.demo.tests.api.paths;
 
-import dev.leocamacho.demo.api.types.ErrorResponse;
+import dev.leocamacho.demo.api.responses.ErrorResponse;
 
 public class ApiResponse<R> {
     private R response;

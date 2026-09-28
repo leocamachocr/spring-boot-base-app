@@ -1,7 +1,9 @@
-package dev.leocamacho.demo.jpa.entities;
+package dev.leocamacho.demo.persistence.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
@@ -12,6 +14,7 @@ import java.util.UUID;
 @Table(name = "users")
 public class UserEntity {
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     @Column
     private String name;
@@ -24,7 +27,6 @@ public class UserEntity {
     }
 
     public UserEntity(String name, String email, String password) {
-        this.id = UUID.randomUUID();
         this.name = name;
         this.email = email;
         this.password = password;
@@ -121,7 +123,6 @@ public class UserEntity {
                 throw new IllegalArgumentException("Email is required");
             }
             UserEntity userEntity = new UserEntity();
-            userEntity.setId(UUID.randomUUID());
             userEntity.setName(name);
             userEntity.setEmail(email);
             userEntity.setPassword(password);

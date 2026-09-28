@@ -1,10 +1,10 @@
 package dev.leocamacho.demo.tests.api.paths;
 
-import dev.leocamacho.demo.api.types.LoginResponse;
-import dev.leocamacho.demo.api.types.LoginUserRequest;
-import dev.leocamacho.demo.api.types.RegisterUserRequest;
-import dev.leocamacho.demo.api.types.Response;
-import dev.leocamacho.demo.api.types.UserResponse;
+import dev.leocamacho.demo.api.responses.LoginResponse;
+import dev.leocamacho.demo.api.request.LoginUserRequest;
+import dev.leocamacho.demo.api.request.RegisterUserRequest;
+import dev.leocamacho.demo.api.responses.Response;
+import dev.leocamacho.demo.api.responses.UserResponse;
 
 public class UserApi {
 

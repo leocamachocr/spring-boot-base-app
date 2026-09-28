@@ -2,8 +2,8 @@ package dev.leocamacho.demo.handlers.commands.impl;
 
 import dev.leocamacho.demo.handlers.commands.EncodePasswordHandler;
 import dev.leocamacho.demo.handlers.commands.RegisterUserHandler;
-import dev.leocamacho.demo.jpa.entities.UserEntity;
-import dev.leocamacho.demo.jpa.repositories.UserRepository;
+import dev.leocamacho.demo.persistence.model.UserEntity;
+import dev.leocamacho.demo.persistence.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -26,7 +26,7 @@ public class RegisterUserHandlerImpl implements RegisterUserHandler {
             return new Result.EmailAlreadyExists();
         }
         var user = repository.save(toEntity(command));
-        return new Result.Success(user);
+        return new Result.Success(user.getId());
     }
 
     private UserEntity toEntity(Command command) {

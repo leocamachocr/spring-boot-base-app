@@ -5,7 +5,6 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import dev.leocamacho.demo.models.AuthenticatedUser;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
