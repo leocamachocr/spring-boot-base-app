@@ -55,7 +55,7 @@ patterns before introducing new ones.
 
 ## Technical Constraints
 
-- Java 21, Spring Boot 4, Gradle (run Gradle with JDK 21; Gradle 8.14 does not run on JDK 25+).
+- Java 26, Spring Boot 4.1 (Spring Security 7.1), Gradle 9.8.
 - Persistence: Spring Data JPA over H2; every schema change is a new Liquibase changeset registered in
   `db.changelog-master.xml`. Existing changesets are never edited.
 - Security: `/api/public/**` is open, `/api/private/**` requires a JWT. The current user is read via
@@ -81,4 +81,4 @@ include a constitution check and justify any deviation. Amendments are made thro
 bumps the version (MAJOR: principle removed or redefined; MINOR: principle or section added; PATCH:
 clarifications) and updates dependent templates. Changes to the architecture reference follow the same process.
 
-**Version**: 2.0.1 | **Ratified**: 2026-09-27 | **Last Amended**: 2026-09-28
+**Version**: 2.0.2 | **Ratified**: 2026-09-27 | **Last Amended**: 2026-09-28

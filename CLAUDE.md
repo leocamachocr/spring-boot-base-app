@@ -27,11 +27,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Always run `./gradlew build` before declaring a task done — it runs both tests and Checkstyle.
 
-Gradle 8.14 cannot run on JDK 25+; if `JAVA_HOME` points to a newer JDK, run Gradle with a JDK 21 (e.g. `JAVA_HOME=~/.jdks/openjdk-21.0.2`).
+Requires JDK 26 (Gradle 9.8 wrapper, toolchain 26). If `JAVA_HOME` points elsewhere, run Gradle with `JAVA_HOME=~/.jdks/openjdk-26.0.2.1`.
 
 ## Architecture
 
-Spring Boot 4 / Java 21 app following **CQRS** with a strict layered architecture enforced at test time by **ArchUnit** (`StructureValidationTests`). The reference architecture is `docs/ARCHITECTURE.md` (mandated by the constitution, principle I); the code follows it.
+Spring Boot 4.1 / Java 26 app following **CQRS** with a strict layered architecture enforced at test time by **ArchUnit** (`StructureValidationTests`). The reference architecture is `docs/ARCHITECTURE.md` (mandated by the constitution, principle I); the code follows it.
 
 ### Layer rules (enforced)
 ```
