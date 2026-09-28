@@ -17,3 +17,11 @@ Feature: User Authentication
       | user | email             | password |
       | User | {$user}@email.com | password |
     Then User receives a message that the email is already registered
+
+  Scenario: User login with invalid credentials
+    Given A user with the following credentials
+      | user | email                 | password |
+      | User | {String:10}@email.com | password |
+    And User is correctly registered
+    When User Login with a wrong password
+    Then User receives a message that the credentials are invalid
