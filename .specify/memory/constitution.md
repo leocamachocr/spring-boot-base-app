@@ -53,12 +53,6 @@ Prefer the simplest solution that satisfies the spec. No speculative abstraction
 modules without a requirement in the spec that needs them. Follow the reference architecture and existing
 patterns before introducing new ones.
 
-## Transition
-
-The codebase predates the reference architecture (legacy packages `api.rests`, `api.types`, `jpa.*`, `models`,
-`BaseException` thrown from controllers). Issue #5 migrates it. Until that migration is merged, no other issue
-may be approved (`speckit:approved`); after it lands, this section is removed in a PATCH amendment.
-
 ## Technical Constraints
 
 - Java 21, Spring Boot 4, Gradle (run Gradle with JDK 21; Gradle 8.14 does not run on JDK 25+).
@@ -87,4 +81,4 @@ include a constitution check and justify any deviation. Amendments are made thro
 bumps the version (MAJOR: principle removed or redefined; MINOR: principle or section added; PATCH:
 clarifications) and updates dependent templates. Changes to the architecture reference follow the same process.
 
-**Version**: 2.0.0 | **Ratified**: 2026-09-27 | **Last Amended**: 2026-09-27
+**Version**: 2.0.1 | **Ratified**: 2026-09-27 | **Last Amended**: 2026-09-28
