@@ -15,6 +15,7 @@ public class ValueGenerator {
     private static final Random RANDOM = new Random();
     private static final int VARIABLE_NAME_GROUP = 3;
     private static final Map<String, Object> VALUE_MAP = new HashMap<>();
+    private static final Pattern REFERENCE_PATTERN = Pattern.compile("\\{\\$\\w+}");
 
     /**
      * Generates a value based on the input string.
@@ -46,6 +47,10 @@ public class ValueGenerator {
         }
         if (input.matches("\\{\\$\\w+}")) {
             return getValueFromMap(input);
+        }
+        if (input.matches(".*\\{\\$\\w+}.*")) {
+            return REFERENCE_PATTERN.matcher(input)
+                    .replaceAll(m -> Matcher.quoteReplacement(String.valueOf(getValueFromMap(m.group()))));
         }
         if (input.contains("{") && input.contains("}")) {
             if (input.matches(".*\\{String:\\d+(:\\w+)?}.*")) {
