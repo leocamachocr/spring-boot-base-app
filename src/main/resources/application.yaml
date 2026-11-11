@@ -1,6 +1,9 @@
 spring:
   application:
     name: client-service
+  config:
+    # Optional local secrets (git-ignored), read as KEY=value properties. See .env.example.
+    import: optional:file:.env[.properties]
   datasource:
     url: jdbc:h2:file:C:/data/testdb123
     username: user
@@ -17,8 +20,8 @@ jwt:
   secret: KXiUPknkoVDCHdNrrYnxmA5oQLbv+LE7eHG8vkk71fjEPq0lmlZKwBhUVLUqKSmGam8P4kWxXKTGCDRgpZ5BMA==
 features:
   chatbot:
-    # Overridable with FEATURES_CHATBOT_ENABLED. When false, no chatbot bean is created and no API key is needed.
-    enabled: false
+    # FEATURES_CHATBOT_ENABLED (environment or .env). When false, no chatbot bean is created and no key is needed.
+    enabled: ${FEATURES_CHATBOT_ENABLED:false}
 google:
   ai:
     api-key: ${GOOGLE_AI_API_KEY:}
