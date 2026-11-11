@@ -166,3 +166,48 @@ and `handlers.tools` (stage-2 seam). Test files sit next to the existing ones.
 
 Deliberately **not** built now (would be dead code, Constitution VII): a `ToolCallRequested` response variant, the
 call → execute → reply loop, tool turn kinds in Java, conversation listing/deletion.
+
+## Extension: Calculator Tool (User Story 5, 2026-11-11)
+
+Scope added on the issue after stage 1 shipped in PR #12. It turns the stage-2 seams into a working action loop
+with one tool.
+
+### Design
+
+- **`ChatProvider` contract**: `Turn` becomes a sealed interface with three variants:
+  - `Text(Role role, String text)`
+  - `ToolCalls(List<ToolCall> calls)`, the assistant asking for actions
+  - `ToolResults(List<ToolResult> results)`, what the system ran
+
+  `ToolCall(String id, String name, Map<String, Object> arguments, String signature)`, where `signature` is an
+  opaque token the service needs echoed back (Gemini's `thoughtSignature`; null when absent).
+  `ToolResult(String id, String name, Map<String, Object> result)`. `Response` gains
+  `ToolCallRequested(List<ToolCall> calls)`. This is the variant deferred in R7, added now because the
+  calculator produces it.
+- **Gemini mapping**: a candidate part with `functionCall {id, name, args}` (plus a sibling `thoughtSignature`)
+  becomes a `ToolCall`. `ToolCalls` are sent back as a `model` turn with the same parts and signatures.
+  `ToolResults` are sent as a `user` turn with `functionResponse {id, name, response}` parts. Function calling
+  mode stays at the service default (`AUTO` when only function declarations are sent).
+- **Handler loop** (`SendChatMessageHandlerImpl`): call the provider; on `ToolCallRequested`, look up each tool
+  by name among the `ChatTool` beans, run it with the session user's id, and append the `ToolCalls` and
+  `ToolResults` turns. Repeat up to `MAX_TOOL_ROUNDS = 5`. When the limit is reached, the result is `NoAnswer`.
+  - An unknown tool, or a tool that throws, produces `{"error": ...}` (FR-019).
+  - The provider is still called outside any transaction. On the final `Answer`, all turns of the message (user
+    text, every tool call and result, assistant text) are saved in one transaction.
+- **Persistence**: `ChatRole` gains `TOOL`; `ChatMessageKind` gains `TOOL_CALL` and `TOOL_RESULT`. Their content is
+  JSON of the calls/results (Jackson `JsonMapper`), signatures included so history can be replayed. No schema
+  change: the columns were sized for this (FR-014).
+  - **History window**: after the last-N cut, leading turns are dropped until the first user text turn, so a
+    window never starts with an orphan tool result.
+- **`CalculatorTool`** (`handlers.tools`, `@Component`): one tool `calculate` with `operation` (`add`,
+  `subtract`, `multiply`, `divide`, `sqrt`), `a`, and `b` (not used by `sqrt`). It returns `{"result": n}` or
+  `{"error": "..."}` and never throws. Its description tells the model to always use it for arithmetic.
+- **Answer**: `Result.Answered` and `ChatAnswerResponse` gain `toolCalls: [{name, arguments, result}]` (empty when
+  no tool ran).
+
+### Complexity Tracking (extension)
+
+| Item | Why Needed | Simpler Alternative Rejected Because |
+|------|------------|-------------------------------------|
+| `signature` field on `ToolCall` | Gemini 3 requires the `thoughtSignature` of a function call to be echoed back | Dropping it risks rejected follow-up requests; it stays opaque to everything outside the provider |
+| JSON content for tool turns | FR-021: tool turns must be replayed as context | Extra columns per field would change the schema for every future tool |

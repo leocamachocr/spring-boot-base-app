@@ -25,9 +25,25 @@ Available only when `features.chatbot.enabled=true`. Requires `Authorization: Be
 ```json
 {
   "conversationId": "3f8a2c1e-6b0d-4a7e-9a51-2d3c4b5a6f70",
-  "answer": "Your name is Ana."
+  "answer": "Your name is Ana.",
+  "toolCalls": []
 }
 ```
+
+With the calculator (User Story 5):
+
+```json
+{
+  "conversationId": "3f8a2c1e-6b0d-4a7e-9a51-2d3c4b5a6f70",
+  "answer": "The square root of 144 is 12.",
+  "toolCalls": [
+    { "name": "calculate", "arguments": { "operation": "sqrt", "a": 144 }, "result": { "result": 12.0 } }
+  ]
+}
+```
+
+`toolCalls` lists every action run for this message, in order; it is empty when none ran. A failed calculation
+shows `"result": { "error": "Division by zero" }`.
 
 ### Errors (`api.responses.ErrorResponse`)
 

@@ -87,3 +87,13 @@ storing the call/result as JSON in `content`. No column is added and no existing
 Conversation[active] --answered message--> Conversation[active] (last_activity_at updated, +2 turns)
 any --provider failure / invalid message--> unchanged (nothing written)
 ```
+
+## Extension: calculator tool (User Story 5)
+
+- `ChatRole`: `USER`, `ASSISTANT`, `TOOL`. `ChatMessageKind`: `TEXT`, `TOOL_CALL`, `TOOL_RESULT`. No schema change.
+- `TOOL_CALL` (role `ASSISTANT`) content: JSON array of `{id, name, arguments, signature}`.
+- `TOOL_RESULT` (role `TOOL`) content: JSON array of `{id, name, result}`.
+- One message stores, in order: user `TEXT`, then per tool round one `TOOL_CALL` + one `TOOL_RESULT`, then the
+  assistant `TEXT`. Each gets an increasing `created_at`.
+- `SendChatMessageHandler.Result.Answered(UUID conversationId, String answer, List<ToolInvocation> toolCalls)` with
+  `ToolInvocation(String name, Map<String, Object> arguments, Map<String, Object> result)`.

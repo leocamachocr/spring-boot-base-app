@@ -23,6 +23,14 @@ The whole feature sits behind an operator-controlled switch and is off unless an
 - Q: Where does the conversation history live? → A: On the server, stored durably per conversation; the
   client sends only the new message and the conversation identifier.
 
+### Session 2026-11-11 (extension: calculator tool)
+
+- Scope extension requested on the issue: the assistant gets a first action, a calculator for addition,
+  subtraction, multiplication, division and square root, invoked through the AI service's tool calling.
+- Q: Should the answer show the calculator calls the assistant made? → A: Yes. The answer lists each call (name,
+  arguments, result), and the calls are also kept in the conversation history.
+- Q: One tool or one per operation? → A: One `calculate` tool with an `operation` argument.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Send a message and get an answer (Priority: P1)
@@ -107,6 +115,32 @@ check the specific error.
 
 ---
 
+### User Story 5 - The assistant uses a calculator for arithmetic (Priority: P2)
+
+When the user asks for an addition, subtraction, multiplication, division or square root, the assistant asks the
+system to run a calculator with the right arguments, receives the result, and answers with it. The user sees
+which calculations were run.
+
+**Why this priority**: It is the first assistant action, proving the action loop end to end before the task
+actions of later stages.
+
+**Independent Test**: Ask "What is the square root of 144?": the answer says 12, and the response lists a
+`calculate` call with operation `sqrt`, argument 144 and result 12.
+
+**Acceptance Scenarios**:
+
+1. **Given** the feature is on, **When** the user asks for an arithmetic operation, **Then** the assistant
+   requests the calculator, the system runs it with the requested arguments, sends the result back to the
+   assistant, and the user receives the final answer together with the list of calculator calls.
+2. **Given** a division by zero or the square root of a negative number, **When** the calculator runs, **Then** it
+   returns an error result instead of failing, and the assistant explains it to the user.
+3. **Given** a conversation in which the calculator was used, **When** the user sends a follow-up message, **Then**
+   the earlier calculator calls and results are part of the context the assistant receives.
+4. **Given** the assistant keeps requesting actions without answering, **When** the limit of action rounds per
+   message is reached, **Then** the user receives the "assistant could not answer" error and nothing is written.
+
+---
+
 ### Edge Cases
 
 - The AI service returns an empty answer or blocks the answer for safety reasons: the user receives an
@@ -144,7 +178,8 @@ check the specific error.
 - **FR-011**: With the switch on and no AI key, the application MUST refuse to start with a clear message.
 - **FR-012**: The AI key and the model used MUST be configurable by the operator; the key MUST never be stored in
   the repository, logged, or returned to users.
-- **FR-013**: The assistant MUST NOT perform any action beyond replying with text in this stage.
+- **FR-013**: The only action the assistant can perform in this stage is the calculator (FR-017); everything else
+  is a text reply.
 - **FR-014** (readiness for later stages): The conversation record MUST be able to hold, besides plain text turns,
   future turn kinds in which the assistant asks to perform an action and receives its result, so that adding
   actions later does not require reshaping existing conversations.
@@ -153,16 +188,26 @@ check the specific error.
   messages or read answers. Actions MUST run on behalf of, and only on the data of, the signed-in user.
 - **FR-016**: The conversation feature MUST NOT depend on the specifics of one AI service, so that the service
   could be replaced without changing what users see.
+- **FR-017**: The assistant MUST have a calculator action supporting addition, subtraction, multiplication,
+  division and square root, and MUST be told to use it for arithmetic instead of computing by itself.
+- **FR-018**: When the assistant requests an action, the system MUST run it with the requested arguments, return
+  the result to the assistant, and repeat until the assistant answers with text, up to 5 rounds per message.
+- **FR-019**: Invalid calculations (division by zero, square root of a negative number, missing or non-numeric
+  arguments, unknown operation) and unknown actions MUST produce an error result for the assistant, never a
+  failed request.
+- **FR-020**: The answer MUST list the actions run for that message, each with its name, arguments and result.
+- **FR-021**: Action requests and results MUST be stored in the conversation, in order, and sent back as context
+  in later messages; nothing is stored when the message ends without an answer.
 
 ### Key Entities
 
 - **Conversation**: A chat thread owned by one user. Attributes: identifier, owner, creation time, time of last
   activity.
-- **Message (turn)**: One entry in a conversation, in order. Attributes: role (user or assistant), kind (text in
-  this stage; action request and action result reserved for later stages), content, time.
-- **Assistant action** (later stages, not implemented now): A named capability the assistant can ask to use,
-  with a description and the inputs it expects, executed for the signed-in user (e.g., list tasks, add a task,
-  search tasks).
+- **Message (turn)**: One entry in a conversation, in order. Attributes: role (user, assistant or tool), kind
+  (text, action request or action result), content, time.
+- **Assistant action**: A named capability the assistant can ask to use, with a description and the inputs it
+  expects, executed for the signed-in user. Stage 1 ships the calculator; later stages add task actions (list,
+  add, search tasks).
 
 ## Success Criteria *(mandatory)*
 
@@ -190,5 +235,6 @@ check the specific error.
 - Automated tests never call the real AI service; it is replaced by a stand-in during tests.
 - The task features the later stages will act on do not exist yet in the application; building them is out of
   scope.
-- Out of scope: implementing any assistant action, the task module, task search, streaming, multimodal input,
-  and a frontend.
+- Out of scope: assistant actions other than the calculator, the task module, task search, streaming,
+  multimodal input, and a frontend.
+- Calculator results are double-precision numbers; exact decimal arithmetic is not required.

@@ -168,3 +168,27 @@ T019 ChatApi (Cucumber REST wrapper)
 
 Commit per coherent unit (Conventional Commits): `feat:` per story, `test:` for test-only additions, `docs:` for
 CLAUDE.md, `build:` for the `e2eTest` change.
+
+## Phase 8: User Story 5 - The assistant uses a calculator for arithmetic (P2, extension 2026-11-11)
+
+**Goal**: arithmetic questions trigger the `calculate` tool through the provider's tool calling; the answer lists
+the calls; tool turns are stored and replayed.
+**Independent Test**: "What is the square root of 144?" → answer mentions 12 and `toolCalls` has `calculate` /
+`sqrt` / 144 / 12.
+
+### Tests for User Story 5
+
+- [X] T040 [P] [US5] Create `handlers/tools/CalculatorToolTests.java` (test dir): add, subtract, multiply, divide, sqrt return `{"result": n}`; division by zero, sqrt of a negative, missing `b`, non-numeric argument and unknown operation return `{"error": ...}`; numbers arrive as `Integer`, `Long` or `Double`
+- [X] T041 [P] [US5] Extend `providers/GeminiChatProviderTests.java`: a `functionCall` part (with `id` and a sibling `thoughtSignature`) → `ToolCallRequested`; `ToolCalls` turns are sent as a `model` turn with `functionCall` + the same `thoughtSignature`; `ToolResults` are sent as a `user` turn with `functionResponse {id, name, response}`
+- [X] T042 [P] [US5] Extend `handlers/commands/SendChatMessageHandlerTests.java`: tool round then answer → the tool runs with the session user id, the second request carries the `ToolCalls` + `ToolResults` turns, four messages are saved in order (TEXT, TOOL_CALL, TOOL_RESULT, TEXT), and `Answered.toolCalls` lists the call; unknown tool → error result sent back; more than 5 rounds → `NoAnswer` and nothing saved; stored tool turns are replayed as context; a history window starting with a tool turn is trimmed to the first user text
+
+### Implementation for User Story 5
+
+- [X] T043 [US5] `providers/ChatProvider.java`: sealed `Turn` (`Text`, `ToolCalls`, `ToolResults`), `ToolCall`, `ToolResult`, `Response.ToolCallRequested`; update every use of `Turn`
+- [X] T044 [US5] `providers/gemini/GeminiDtos.java` + `GeminiChatProvider.java`: map `functionCall`/`thoughtSignature`/`functionResponse` both ways
+- [X] T045 [US5] `persistence/model/ChatRole.java` (+`TOOL`) and `ChatMessageKind.java` (+`TOOL_CALL`, `TOOL_RESULT`)
+- [X] T046 [US5] `handlers/commands/SendChatMessageHandler.java`: `Answered` gets `List<ToolInvocation> toolCalls`; `handlers/commands/impl/SendChatMessageHandlerImpl.java`: tool loop (`MAX_TOOL_ROUNDS = 5`), JSON storage and replay of tool turns, history trimming, save all turns in one transaction
+- [X] T047 [P] [US5] Create `handlers/tools/CalculatorTool.java` (`@Component`, tool `calculate`)
+- [X] T048 [US5] `api/responses/ChatAnswerResponse.java` (+`toolCalls`) and `api/controllers/ChatController.java` mapping
+- [X] T049 [US5] Add an `@chatbot-live` scenario to `src/test/resources/features/Chatbot.feature` (+ steps in `ChatSteps.java`): square root of 144 → answer mentions 12 and `toolCalls` contains `calculate`
+- [ ] T050 [US5] (partial 2026-11-11: build green with 64 tests; live: sqrt → `calculate` → "The square root of 144 is 12." and division by zero → tool error explained; follow-up over stored tool turns not yet run live, blocked by the free-tier daily quota (20 requests/model) and 503s) `./gradlew build`, then run the `@chatbot-live` scenarios with a real key; update CLAUDE.md
