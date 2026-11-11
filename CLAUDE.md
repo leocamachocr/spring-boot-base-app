@@ -63,7 +63,8 @@ Expected business outcomes (invalid fields, email exists, invalid credentials, u
 
 ### Chatbot (feature-flagged)
 - `POST /api/private/chat/messages` (`ChatController` → `SendChatMessageHandler` → `ChatProvider`). Gemini is called over REST with `RestClient` in `providers.gemini`; an ArchUnit rule forbids depending on `providers.gemini` from outside `providers`.
-- Off by default: `features.chatbot.enabled` (`FEATURES_CHATBOT_ENABLED`). Every chatbot bean is `@ConditionalOnProperty`, so with the flag off the route answers 404 and no key is needed. With the flag on, `GOOGLE_AI_API_KEY` is mandatory (startup fails without it). Model: `google.ai.model`.
+- Off by default: `features.chatbot.enabled` (`FEATURES_CHATBOT_ENABLED`). Every chatbot bean is `@ConditionalOnProperty`, so with the flag off the route answers 404 and no key is needed. With the flag on, `GOOGLE_AI_API_KEY` is mandatory (startup fails without it). Both can live in a git-ignored `.env` at the project root (imported by `application.yaml`; see `.env.example`). Model: `google.ai.model` (default `gemini-3.5-flash`).
+- On this Windows machine Avast re-signs HTTPS traffic, so the JDK rejects Google's certificate (`PKIX path building failed`; Gradle dependency downloads fail the same way). Run the app with `-Djavax.net.ssl.trustStoreType=Windows-ROOT`, and Gradle with `--offline` when the cache is enough.
 - History lives in `chat_conversations` / `chat_messages`; the Gemini call runs outside any transaction and turns are saved only on an answer. `ChatTool` (`handlers.tools`) is the seam for future assistant actions; it has no implementations yet.
 
 ### Security

@@ -153,7 +153,7 @@ and `handlers.tools` (stage-2 seam). Test files sit next to the existing ones.
 
 ## Open Decisions
 
-- None blocking. To verify during implementation: the `gemini-flash-latest` alias (R2) and the exact exception
+- None blocking. Verified during implementation: the default model (R2, now pinned to `gemini-3.5-flash`) and the exact exception
   Spring MVC 7 raises for an unmapped route (R4) — both covered by tests in the task list.
 
 ## Complexity Tracking

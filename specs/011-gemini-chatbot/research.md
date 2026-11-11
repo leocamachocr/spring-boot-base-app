@@ -39,6 +39,9 @@ Each entry records a decision, why it was taken, and what else was considered.
   appears in access logs.
 - **To verify at implementation**: that the `gemini-flash-latest` alias still resolves on the v1beta endpoint; if
   not, pin the current stable Flash model from the Gemini models page.
+- **Verified 2026-11-11 with a real key**: the alias resolves, but it answered `503 UNAVAILABLE` ("high demand") on
+  every attempt, while `gemini-3.5-flash` answered in under 2 s; `gemini-2.5-flash` is no longer available to new
+  keys. **Revised decision**: default `google.ai.model: gemini-3.5-flash`, pinned; still overridable.
 - **Alternatives considered**: hardcoding a model version (goes stale); key as `?key=` query parameter (leaks in
   logs and proxies).
 

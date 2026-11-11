@@ -62,7 +62,7 @@ features:
 google:
   ai:
     api-key: ${GOOGLE_AI_API_KEY:}
-    model: gemini-flash-latest
+    model: gemini-3.5-flash
     base-url: https://generativelanguage.googleapis.com/v1beta
     timeout: 30s
 chatbot:

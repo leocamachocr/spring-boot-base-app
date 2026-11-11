@@ -20,6 +20,13 @@ export FEATURES_CHATBOT_ENABLED=true
 With `FEATURES_CHATBOT_ENABLED=true` and no key, startup fails with a message naming `GOOGLE_AI_API_KEY`.
 Without the flag, the app starts as before and the chat route answers 404.
 
+The two variables can also go in a git-ignored `.env` at the project root (see `.env.example`).
+
+If an antivirus re-signs HTTPS traffic (e.g. Avast Web Shield), Java rejects the Gemini certificate with
+`PKIX path building failed` and every message answers 3003. Run the JVM with the Windows trust store:
+`-Djavax.net.ssl.trustStoreType=Windows-ROOT` (IntelliJ: *VM options*), or exclude
+`generativelanguage.googleapis.com` from the antivirus HTTPS scanning.
+
 ## 3. Log in and chat
 
 ```bash

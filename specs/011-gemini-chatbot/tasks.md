@@ -114,8 +114,8 @@ or raw error in the body and nothing saved.
 ## Phase 7: Polish & Cross-Cutting
 
 - [X] T034 Run `./gradlew build` and fix every Checkstyle finding (line length 120, `NeedBraces`, `MagicNumber`, constants `UPPER_SNAKE_CASE`, no star or unused imports, newline at EOF); report any warning
-- [ ] T035 (blocked: this environment cannot reach Google; verify with a real key) Verify the `gemini-flash-latest` alias against the live API (research R2); if it does not resolve, set the current stable Flash model in `src/main/resources/application.yaml` and in `specs/011-gemini-chatbot/contracts/chat-api.md`
-- [ ] T036 (partial: defaults → 404, no key → startup fails and validation/error paths verified on a local run; `@chatbot-live` not run, needs a real key) Run quickstart.md end to end: defaults → 404; flag on without key → startup fails; flag on with key → two-turn conversation; `./gradlew e2eTest` and `./gradlew e2eTest "-Dcucumber.filter.tags=@chatbot-live"`
+- [X] T035 (done 2026-11-11: alias resolves but answered 503 on every try; default pinned to `gemini-3.5-flash`) Verify the `gemini-flash-latest` alias against the live API (research R2); if it does not resolve, set the current stable Flash model in `src/main/resources/application.yaml` and in `specs/011-gemini-chatbot/contracts/chat-api.md`
+- [X] T036 (done 2026-11-11: quickstart two-turn conversation and all 6 `@chatbot-live` scenarios pass with a real key; local runs behind Avast need `-Djavax.net.ssl.trustStoreType=Windows-ROOT`) Run quickstart.md end to end: defaults → 404; flag on without key → startup fails; flag on with key → two-turn conversation; `./gradlew e2eTest` and `./gradlew e2eTest "-Dcucumber.filter.tags=@chatbot-live"`
 - [X] T037 [P] Grep the codebase, test output and app log for the key value and for `?key=` to confirm the key never appears (SC-004)
 - [X] T038 [P] Document the chatbot settings (flag, `GOOGLE_AI_API_KEY`, model) and the `@chatbot-live` tag in `CLAUDE.md` (Security/Testing sections)
 - [ ] T039 Write the PR description calling out: the new ArchUnit rule and why; unknown routes now return 404 instead of 400; no new dependencies; `Closes #11`
