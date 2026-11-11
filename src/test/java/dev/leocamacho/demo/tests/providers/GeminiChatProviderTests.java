@@ -16,7 +16,10 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
@@ -151,6 +154,25 @@ public class GeminiChatProviderTests {
         var response = provider(SHORT_TIMEOUT).reply(singleTurn());
 
         assertEquals(new ChatProvider.Response.Unavailable(ChatProvider.Reason.TIMEOUT), response);
+    }
+
+    @Test
+    public void tlsFailureIsAServiceErrorNotATimeout() throws IOException, InterruptedException {
+        try (var plainSocket = new ServerSocket(0, 1, InetAddress.getLoopbackAddress())) {
+            var answerInPlainText = Thread.ofVirtual().start(() -> {
+                try (Socket client = plainSocket.accept()) {
+                    client.getOutputStream().write("HTTP/1.1 400 Bad Request\r\n\r\n".getBytes(StandardCharsets.UTF_8));
+                } catch (IOException ignored) {
+                    // The provider side of the exchange is what the test asserts on.
+                }
+            });
+            var httpsUrl = "https://127.0.0.1:" + plainSocket.getLocalPort() + "/v1beta";
+
+            var response = new GeminiChatProvider(API_KEY, MODEL, httpsUrl, TIMEOUT).reply(singleTurn());
+
+            answerInPlainText.join();
+            assertEquals(new ChatProvider.Response.Unavailable(ChatProvider.Reason.SERVICE_ERROR), response);
+        }
     }
 
     @ParameterizedTest

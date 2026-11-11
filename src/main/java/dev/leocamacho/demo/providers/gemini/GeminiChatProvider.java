@@ -9,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
@@ -69,20 +68,16 @@ public class GeminiChatProvider implements ChatProvider {
             LOGGER.warn("Gemini call failed: model={}, status={}, reason={}", model, ex.getStatusCode().value(),
                     reason);
             return new Response.Unavailable(reason);
-        } catch (ResourceAccessException ex) {
-            LOGGER.warn("Gemini call failed: model={}, reason={}", model, Reason.TIMEOUT);
-            return new Response.Unavailable(Reason.TIMEOUT);
         } catch (RestClientException ex) {
             var reason = causedByTimeout(ex) ? Reason.TIMEOUT : Reason.SERVICE_ERROR;
-            LOGGER.warn("Gemini call failed: model={}, reason={}, error={}", model, reason,
-                    ex.getClass().getSimpleName());
+            LOGGER.warn("Gemini call failed: model={}, reason={}, error={}", model, reason, rootCauseName(ex));
             return new Response.Unavailable(reason);
         }
     }
 
     /**
-     * A read timeout can surface wrapped in a generic {@link RestClientException} when it happens while the body is
-     * being extracted, so the cause chain is inspected.
+     * Only real timeouts count: a read timeout can surface wrapped in a generic {@link RestClientException}, while
+     * TLS, DNS or connection failures also arrive as {@code ResourceAccessException} and are not timeouts.
      */
     private static boolean causedByTimeout(Throwable ex) {
         for (var cause = ex; cause != null; cause = cause.getCause()) {
@@ -91,6 +86,14 @@ public class GeminiChatProvider implements ChatProvider {
             }
         }
         return false;
+    }
+
+    private static String rootCauseName(Throwable ex) {
+        var root = ex;
+        while (root.getCause() != null && root.getCause() != root) {
+            root = root.getCause();
+        }
+        return root.getClass().getSimpleName();
     }
 
     private Response toResponse(GeminiDtos.GenerateResponse body) {
