@@ -1,5 +1,7 @@
 package dev.leocamacho.demo.handlers.commands;
 
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public interface SendChatMessageHandler {
@@ -12,8 +14,17 @@ public interface SendChatMessageHandler {
     record Command(UUID userId, UUID conversationId, String message) {
     }
 
+    /**
+     * An action the assistant ran while answering the message.
+     */
+    record ToolInvocation(String name, Map<String, Object> arguments, Map<String, Object> result) {
+    }
+
     sealed interface Result {
-        record Answered(UUID conversationId, String answer) implements Result {
+        /**
+         * @param toolCalls actions run for this message, in order; empty when none ran
+         */
+        record Answered(UUID conversationId, String answer, List<ToolInvocation> toolCalls) implements Result {
         }
 
         record InvalidMessage(String reason) implements Result {

@@ -29,7 +29,20 @@ final class GeminiDtos {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    record Part(String text) {
+    record Part(String text, FunctionCall functionCall, FunctionResponse functionResponse, String thoughtSignature) {
+
+        static Part ofText(String text) {
+            return new Part(text, null, null, null);
+        }
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    record FunctionCall(String id, String name, Map<String, Object> args) {
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    record FunctionResponse(String id, String name, Map<String, Object> response) {
     }
 
     record Tool(List<FunctionDeclaration> functionDeclarations) {
@@ -52,7 +65,7 @@ final class GeminiDtos {
 
     static GenerateRequest toRequest(ChatProvider.Request request) {
         var contents = request.history().stream()
-                .map(turn -> new Content(toRole(turn.role()), List.of(new Part(turn.text()))))
+                .map(GeminiDtos::toContent)
                 .toList();
         List<Tool> tools = request.tools().isEmpty()
                 ? List.of()
@@ -60,6 +73,34 @@ final class GeminiDtos {
                         .map(tool -> new FunctionDeclaration(tool.name(), tool.description(), tool.parameters()))
                         .toList()));
         return new GenerateRequest(contents, tools);
+    }
+
+    /**
+     * @return the tool calls in the parts, empty when the parts carry no function call
+     */
+    static List<ChatProvider.ToolCall> toolCalls(List<Part> parts) {
+        return parts.stream()
+                .filter(part -> part.functionCall() != null)
+                .map(part -> new ChatProvider.ToolCall(
+                        part.functionCall().id(),
+                        part.functionCall().name(),
+                        part.functionCall().args() == null ? Map.of() : part.functionCall().args(),
+                        part.thoughtSignature()))
+                .toList();
+    }
+
+    private static Content toContent(ChatProvider.Turn turn) {
+        return switch (turn) {
+            case ChatProvider.Turn.Text text -> new Content(toRole(text.role()), List.of(Part.ofText(text.text())));
+            case ChatProvider.Turn.ToolCalls calls -> new Content(MODEL_ROLE, calls.calls().stream()
+                    .map(call -> new Part(null, new FunctionCall(call.id(), call.name(), call.arguments()), null,
+                            call.signature()))
+                    .toList());
+            case ChatProvider.Turn.ToolResults results -> new Content(USER_ROLE, results.results().stream()
+                    .map(result -> new Part(null, null,
+                            new FunctionResponse(result.id(), result.name(), result.result()), null))
+                    .toList());
+        };
     }
 
     private static String toRole(ChatProvider.Role role) {

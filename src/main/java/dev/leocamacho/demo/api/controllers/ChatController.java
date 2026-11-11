@@ -37,7 +37,11 @@ public class ChatController {
         var correlationId = session.correlationId();
         return switch (result) {
             case SendChatMessageHandler.Result.Answered answered ->
-                    ResponseEntity.ok(new ChatAnswerResponse(answered.conversationId(), answered.answer()));
+                    ResponseEntity.ok(new ChatAnswerResponse(answered.conversationId(), answered.answer(),
+                            answered.toolCalls().stream()
+                                    .map(call -> new ChatAnswerResponse.ToolCall(
+                                            call.name(), call.arguments(), call.result()))
+                                    .toList()));
             case SendChatMessageHandler.Result.InvalidMessage invalid ->
                     badRequest(ErrorCode.CHAT_INVALID_MESSAGE, correlationId, invalid.reason());
             case SendChatMessageHandler.Result.ConversationNotFound ignored ->

@@ -85,6 +85,15 @@ public class ChatSteps {
                 () -> "Answer does not mention " + expected + ": " + answer);
     }
 
+    @Then("the assistant used the tool {string} with operation {string}")
+    public void theAssistantUsedTheToolWithOperation(String tool, String operation) {
+        assertNull(lastResponse.error(), () -> "Unexpected error: " + lastResponse.error());
+        var toolCalls = lastResponse.response().toolCalls();
+        assertTrue(toolCalls.stream().anyMatch(call -> tool.equals(call.name())
+                        && operation.equals(String.valueOf(call.arguments().get("operation")))),
+                () -> "Expected a " + tool + " call with operation " + operation + ", got " + toolCalls);
+    }
+
     @Then("User receives a chat error with code {int}")
     public void userReceivesAChatErrorWithCode(int code) {
         assertNotNull(lastResponse.error(), "Expected an error response");

@@ -15,6 +15,7 @@ import org.springframework.web.client.RestClientResponseException;
 
 import java.io.InterruptedIOException;
 import java.time.Duration;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -110,12 +111,17 @@ public class GeminiChatProvider implements ChatProvider {
         if (BLOCKED_FINISH_REASONS.contains(candidate.finishReason())) {
             return noAnswer(NoAnswerReason.BLOCKED);
         }
-        var text = candidate.content() == null || candidate.content().parts() == null
-                ? ""
-                : candidate.content().parts().stream()
-                        .map(GeminiDtos.Part::text)
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.joining());
+        var parts = candidate.content() == null || candidate.content().parts() == null
+                ? List.<GeminiDtos.Part>of()
+                : candidate.content().parts();
+        var toolCalls = GeminiDtos.toolCalls(parts);
+        if (!toolCalls.isEmpty()) {
+            return new Response.ToolCallRequested(toolCalls);
+        }
+        var text = parts.stream()
+                .map(GeminiDtos.Part::text)
+                .filter(Objects::nonNull)
+                .collect(Collectors.joining());
         if (text.isBlank()) {
             return noAnswer(NoAnswerReason.EMPTY);
         }

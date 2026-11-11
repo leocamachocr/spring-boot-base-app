@@ -75,3 +75,14 @@ Feature: Chatbot
     And User Login with the credentials
     When User sends a chat message of 4001 characters
     Then User receives a chat error with code 3001
+
+  @chatbot-live
+  Scenario: The assistant uses the calculator tool for arithmetic
+    Given A user with the following credentials
+      | user | email                 | password |
+      | User | {String:10}@email.com | password |
+    And User is correctly registered
+    And User Login with the credentials
+    When User sends the chat message "What is the square root of 144?"
+    Then the answer mentions "12"
+    And the assistant used the tool "calculate" with operation "sqrt"

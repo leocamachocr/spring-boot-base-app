@@ -45,6 +45,8 @@ public class GeminiChatProviderTests {
             {"candidates":[{"content":{"role":"model","parts":[{"text":"Hello "},{"text":"Ana"}]},
              "finishReason":"STOP"}]}""";
     private static final JsonMapper JSON = JsonMapper.builder().build();
+    private static final int SQRT_INPUT = 144;
+    private static final double SQRT_OUTPUT = 12.0;
 
     private HttpServer server;
     private String baseUrl;
@@ -88,9 +90,9 @@ public class GeminiChatProviderTests {
         var provider = provider(TIMEOUT);
 
         provider.reply(new ChatProvider.Request(List.of(
-                new ChatProvider.Turn(ChatProvider.Role.USER, "My name is Ana"),
-                new ChatProvider.Turn(ChatProvider.Role.ASSISTANT, "Nice to meet you"),
-                new ChatProvider.Turn(ChatProvider.Role.USER, "What is my name?")), List.of()));
+                new ChatProvider.Turn.Text(ChatProvider.Role.USER, "My name is Ana"),
+                new ChatProvider.Turn.Text(ChatProvider.Role.ASSISTANT, "Nice to meet you"),
+                new ChatProvider.Turn.Text(ChatProvider.Role.USER, "What is my name?")), List.of()));
 
         assertEquals("/v1beta/models/" + MODEL + ":generateContent", receivedPath);
         assertEquals(API_KEY, receivedKey);
@@ -108,7 +110,7 @@ public class GeminiChatProviderTests {
         var provider = provider(TIMEOUT);
 
         provider.reply(new ChatProvider.Request(
-                List.of(new ChatProvider.Turn(ChatProvider.Role.USER, "List my tasks")),
+                List.of(new ChatProvider.Turn.Text(ChatProvider.Role.USER, "List my tasks")),
                 List.of(new ChatProvider.ToolDefinition("listTasks", "Lists the user's tasks",
                         Map.of("type", "object")))));
 
@@ -123,6 +125,48 @@ public class GeminiChatProviderTests {
         var response = provider(TIMEOUT).reply(singleTurn());
 
         assertEquals(new ChatProvider.Response.Answer("Hello Ana"), response);
+    }
+
+    @Test
+    public void functionCallPartsBecomeAToolCallRequestWithTheirSignature() {
+        responseBody = """
+                {"candidates":[{"content":{"role":"model","parts":[
+                  {"functionCall":{"id":"fc-1","name":"calculate","args":{"operation":"sqrt","a":144}},
+                   "thoughtSignature":"c2lnbmF0dXJl"}]},
+                 "finishReason":"STOP"}]}""";
+
+        var response = provider(TIMEOUT).reply(singleTurn());
+
+        assertEquals(new ChatProvider.Response.ToolCallRequested(List.of(new ChatProvider.ToolCall(
+                "fc-1", "calculate", Map.of("operation", "sqrt", "a", SQRT_INPUT), "c2lnbmF0dXJl"))), response);
+    }
+
+    @Test
+    public void toolTurnsAreSentAsFunctionCallAndFunctionResponseParts() {
+        var call = new ChatProvider.ToolCall("fc-1", "calculate", Map.of("operation", "sqrt", "a", SQRT_INPUT),
+                "c2lnbmF0dXJl");
+
+        provider(TIMEOUT).reply(new ChatProvider.Request(List.of(
+                new ChatProvider.Turn.Text(ChatProvider.Role.USER, "Square root of 144?"),
+                new ChatProvider.Turn.ToolCalls(List.of(call)),
+                new ChatProvider.Turn.ToolResults(List.of(
+                        new ChatProvider.ToolResult("fc-1", "calculate", Map.of("result", SQRT_OUTPUT))))),
+                List.of()));
+
+        var contents = JSON.readTree(receivedBody).get("contents");
+        var modelPart = contents.get(1).get("parts").get(0);
+        assertEquals("model", contents.get(1).get("role").asString());
+        assertEquals("fc-1", modelPart.get("functionCall").get("id").asString());
+        assertEquals("calculate", modelPart.get("functionCall").get("name").asString());
+        assertEquals(SQRT_INPUT, modelPart.get("functionCall").get("args").get("a").asInt());
+        assertEquals("c2lnbmF0dXJl", modelPart.get("thoughtSignature").asString());
+        assertFalse(modelPart.has("text"));
+
+        var resultPart = contents.get(2).get("parts").get(0);
+        assertEquals("user", contents.get(2).get("role").asString());
+        assertEquals("fc-1", resultPart.get("functionResponse").get("id").asString());
+        assertEquals("calculate", resultPart.get("functionResponse").get("name").asString());
+        assertEquals(SQRT_OUTPUT, resultPart.get("functionResponse").get("response").get("result").asDouble());
     }
 
     @ParameterizedTest
@@ -214,7 +258,7 @@ public class GeminiChatProviderTests {
     }
 
     private static ChatProvider.Request singleTurn() {
-        return new ChatProvider.Request(List.of(new ChatProvider.Turn(ChatProvider.Role.USER, "Hi")), List.of());
+        return new ChatProvider.Request(List.of(new ChatProvider.Turn.Text(ChatProvider.Role.USER, "Hi")), List.of());
     }
 
     private static void pause(long millis) {
