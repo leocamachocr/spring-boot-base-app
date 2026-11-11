@@ -59,16 +59,13 @@ public class SendChatMessageHandlerImpl implements SendChatMessageHandler {
             return invalid.get();
         }
 
-        ConversationEntity conversation = null;
-        var history = new ArrayList<ChatProvider.Turn>();
-        if (command.conversationId() != null) {
-            var found = conversationRepository.findByIdAndOwnerId(command.conversationId(), command.userId());
-            if (found.isEmpty()) {
-                return new Result.ConversationNotFound();
-            }
-            conversation = found.get();
-            history.addAll(recentTurns(conversation));
+        var conversation = getCurrentConversation(command);
+        if (command.conversationId() != null && conversation.isEmpty()) {
+            return new Result.ConversationNotFound();
         }
+
+        var history = new ArrayList<ChatProvider.Turn>();
+        conversation.map(this::recentTurns).ifPresent(history::addAll);
 
         var askedAt = Instant.now();
         history.add(new ChatProvider.Turn(ChatProvider.Role.USER, command.message()));
@@ -91,6 +88,17 @@ public class SendChatMessageHandlerImpl implements SendChatMessageHandler {
         return Optional.empty();
     }
 
+    /**
+     * @return the user's conversation named in the command; empty when the command starts a new conversation or when
+     *         the conversation does not exist or belongs to another user
+     */
+    private Optional<ConversationEntity> getCurrentConversation(Command command) {
+        if (command.conversationId() == null) {
+            return Optional.empty();
+        }
+        return conversationRepository.findByIdAndOwnerId(command.conversationId(), command.userId());
+    }
+
     private List<ChatProvider.Turn> recentTurns(ConversationEntity conversation) {
         var recent = new ArrayList<>(messageRepository.findByConversationIdOrderByCreatedAtDescIdDesc(
                 conversation.getId(), Limit.of(historyMaxTurns)));
@@ -105,14 +113,14 @@ public class SendChatMessageHandlerImpl implements SendChatMessageHandler {
                 .toList();
     }
 
-    private Result saveTurns(ConversationEntity existing, Command command, Instant askedAt, String answer) {
+    private Result saveTurns(Optional<ConversationEntity> existing, Command command, Instant askedAt, String answer) {
         var answeredAt = Instant.now();
         if (!answeredAt.isAfter(askedAt)) {
             answeredAt = askedAt.plusNanos(1);
         }
         var answerTime = answeredAt;
         var conversation = transactionTemplate.execute(status -> {
-            var target = existing != null ? existing : new ConversationEntity(command.userId(), askedAt);
+            var target = existing.orElseGet(() -> new ConversationEntity(command.userId(), askedAt));
             target.setLastActivityAt(answerTime);
             var saved = conversationRepository.save(target);
             messageRepository.saveAll(List.of(
