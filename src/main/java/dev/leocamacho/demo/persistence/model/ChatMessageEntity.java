@@ -40,7 +40,9 @@ public class ChatMessageEntity {
     public ChatMessageEntity() {
     }
 
-    public ChatMessageEntity(ChatRole role, ChatMessageKind kind, String content, Instant createdAt) {
+    public ChatMessageEntity(ConversationEntity conversation, ChatRole role, ChatMessageKind kind, String content,
+                             Instant createdAt) {
+        this.conversation = conversation;
         this.role = role;
         this.kind = kind;
         this.content = content;

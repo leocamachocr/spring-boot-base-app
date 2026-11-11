@@ -34,22 +34,22 @@ carries `@ConditionalOnProperty(name = "features.chatbot.enabled", havingValue =
 **Goal**: a signed-in user sends a message without a conversation id and gets the assistant's answer and a new
 conversation id.
 **Independent Test**: with the flag on and a real key, `POST /api/private/chat/messages {"message":"Hello"}` returns
-200 with a non-empty `answer` and a `conversationId`; without a JWT it returns 401.
+200 with a non-empty `answer` and a `conversationId`; without a JWT it returns 403 (existing behavior of private routes).
 
 ### Tests for User Story 1
 
-- [ ] T012 [P] [US1] Create `providers/GeminiChatProviderTests.java` with `MockRestServiceServer` bound to a `RestClient.Builder`: request goes to `{base-url}/models/{model}:generateContent`, carries the key only in the `x-goog-api-key` header (never in the URL), maps `USER` → `"user"` and `ASSISTANT` → `"model"`, omits `tools` when the list is empty, sends `functionDeclarations` when not empty; a candidate with text parts → `Answer` with the parts concatenated
-- [ ] T013 [P] [US1] Create `handlers/commands/SendChatMessageHandlerTests.java` (Mockito, strict stubs, mocks for `ConversationRepository`, `ChatMessageRepository`, `ChatProvider`, `ObjectProvider<ChatTool>`): new conversation + `Answer` → `Answered` with the saved conversation id, one `save` holding the user turn then the assistant turn (`kind = TEXT`), provider request has empty history plus the user turn and an empty `tools` list
+- [X] T012 [P] [US1] Create `providers/GeminiChatProviderTests.java` against a local JDK `HttpServer` (instead of `MockRestServiceServer`, which would be overridden by the provider's own request factory): request goes to `{base-url}/models/{model}:generateContent`, carries the key only in the `x-goog-api-key` header (never in the URL), maps `USER` → `"user"` and `ASSISTANT` → `"model"`, omits `tools` when the list is empty, sends `functionDeclarations` when not empty; a candidate with text parts → `Answer` with the parts concatenated
+- [X] T013 [P] [US1] Create `handlers/commands/SendChatMessageHandlerTests.java` (Mockito, strict stubs, mocks for `ConversationRepository`, `ChatMessageRepository`, `ChatProvider`, `ObjectProvider<ChatTool>`): new conversation + `Answer` → `Answered` with the saved conversation id, one `save` holding the user turn then the assistant turn (`kind = TEXT`), provider request has empty history plus the user turn and an empty `tools` list
 
 ### Implementation for User Story 1
 
-- [ ] T014 [P] [US1] Create `providers/gemini/GeminiDtos.java` with package-private records for the request (`contents[{role, parts[{text}]}]`, `tools[{functionDeclarations[{name, description, parameters}]}]`) and the response (`candidates[{content{parts[{text}]}, finishReason}]`, `promptFeedback{blockReason}`), `@JsonInclude(NON_NULL/NON_EMPTY)` so empty `tools` is omitted
-- [ ] T015 [US1] Create `providers/gemini/GeminiChatProvider.java` (`@Component`, conditional on the flag, implements `ChatProvider`): `RestClient` built from `RestClient.Builder` with `google.ai.base-url`, default header `x-goog-api-key`, and request timeouts from `google.ai.timeout`; maps `Request` → DTOs and a text candidate → `Answer`; logs model and HTTP status only, never the key or bodies (depends on T014)
-- [ ] T016 [US1] Create `handlers/commands/impl/SendChatMessageHandlerImpl.java` (`@Component`, conditional on the flag, one public method `handle`): reject a null message as `InvalidMessage` (T031 completes validation), build history (empty for a new conversation) + user turn stamped with `Instant.now()`, map `ObjectProvider<ChatTool>` beans to `ToolDefinition`s, call `chatProvider.reply(...)` with **no** `@Transactional`, and on `Answer` create the `ConversationEntity` (owner = `userId`), add user and assistant `ChatMessageEntity`s, set `lastActivityAt`, save once, return `Answered`; the switch on `Response` is exhaustive (`Unavailable` → `AssistantUnavailable`, `NoAnswer` → `NoAnswer`, nothing written)
-- [ ] T017 [P] [US1] Create `api/request/SendChatMessageRequest.java` (`UUID conversationId`, `String message`) and `api/responses/ChatAnswerResponse.java` (`UUID conversationId`, `String answer`)
-- [ ] T018 [US1] Create `api/controllers/ChatController.java` (`@RestController`, `@RequestMapping("/api/private/chat")`, conditional on the flag): `@PostMapping("/messages")` builds the `Command` with `SessionContextHolder.getSession().id()` and switches exhaustively on `Result` per contracts/chat-api.md (200 `ChatAnswerResponse`; 400 `ErrorResponse.of(CHAT_*, correlationId)` for every error variant)
-- [ ] T019 [P] [US1] Create `src/test/java/dev/leocamacho/demo/tests/api/paths/ChatApi.java` (REST-Assured wrapper over `ApiVerbs`, `sendMessage(UUID conversationId, String message)` with the bearer token from `ApiContext`) and register its path in `api/paths/Path.java` if the project lists paths there
-- [ ] T020 [US1] Create `src/test/resources/features/Chatbot.feature` and `api/steps/ChatSteps.java` with an `@chatbot-live` scenario: registered and logged-in user sends "Hello" → 200, non-empty answer, conversation id is a UUID (reuse `AuthenticationSteps`/`ScenarioContext` for login)
+- [X] T014 [P] [US1] Create `providers/gemini/GeminiDtos.java` with package-private records for the request (`contents[{role, parts[{text}]}]`, `tools[{functionDeclarations[{name, description, parameters}]}]`) and the response (`candidates[{content{parts[{text}]}, finishReason}]`, `promptFeedback{blockReason}`), `@JsonInclude(NON_NULL/NON_EMPTY)` so empty `tools` is omitted
+- [X] T015 [US1] Create `providers/gemini/GeminiChatProvider.java` (`@Component`, conditional on the flag, implements `ChatProvider`): `RestClient` built from `RestClient.Builder` with `google.ai.base-url`, default header `x-goog-api-key`, and request timeouts from `google.ai.timeout`; maps `Request` → DTOs and a text candidate → `Answer`; logs model and HTTP status only, never the key or bodies (depends on T014)
+- [X] T016 [US1] Create `handlers/commands/impl/SendChatMessageHandlerImpl.java` (`@Component`, conditional on the flag, one public method `handle`): reject a null message as `InvalidMessage` (T031 completes validation), build history (empty for a new conversation) + user turn stamped with `Instant.now()`, map `ObjectProvider<ChatTool>` beans to `ToolDefinition`s, call `chatProvider.reply(...)` with **no** `@Transactional`, and on `Answer` create the `ConversationEntity` (owner = `userId`), add user and assistant `ChatMessageEntity`s, set `lastActivityAt`, save once, return `Answered`; the switch on `Response` is exhaustive (`Unavailable` → `AssistantUnavailable`, `NoAnswer` → `NoAnswer`, nothing written)
+- [X] T017 [P] [US1] Create `api/request/SendChatMessageRequest.java` (`UUID conversationId`, `String message`) and `api/responses/ChatAnswerResponse.java` (`UUID conversationId`, `String answer`)
+- [X] T018 [US1] Create `api/controllers/ChatController.java` (`@RestController`, `@RequestMapping("/api/private/chat")`, conditional on the flag): `@PostMapping("/messages")` builds the `Command` with `SessionContextHolder.getSession().id()` and switches exhaustively on `Result` per contracts/chat-api.md (200 `ChatAnswerResponse`; 400 `ErrorResponse.of(CHAT_*, correlationId)` for every error variant)
+- [X] T019 [P] [US1] Create `src/test/java/dev/leocamacho/demo/tests/api/paths/ChatApi.java` (REST-Assured wrapper over `ApiVerbs`, `sendMessage(UUID conversationId, String message)` with the bearer token from `ApiContext`) and register its path in `api/paths/Path.java` if the project lists paths there
+- [X] T020 [US1] Create `src/test/resources/features/Chatbot.feature` and `api/steps/ChatSteps.java` with an `@chatbot-live` scenario: registered and logged-in user sends "Hello" → 200, non-empty answer, conversation id is a UUID (reuse `AuthenticationSteps`/`ScenarioContext` for login)
 
 **Checkpoint**: US1 works end to end with the flag on and a real key (quickstart.md §3, first request).
 
@@ -62,12 +62,12 @@ same id used by another user → 400 `CHAT_CONVERSATION_NOT_FOUND`.
 
 ### Tests for User Story 2
 
-- [ ] T021 [P] [US2] Extend `handlers/commands/SendChatMessageHandlerTests.java`: existing conversation → history loaded via `findByConversationIdOrderByCreatedAtDescIdDesc` with `Limit.of(historyMaxTurns)`, reversed to chronological order, followed by the new user turn; new turns appended to the existing conversation and `lastActivityAt` updated; unknown id or another owner (`findByIdAndOwnerId` empty) → `ConversationNotFound` with no provider call and no save; history longer than the cap → only the most recent `historyMaxTurns` turns sent
+- [X] T021 [P] [US2] Extend `handlers/commands/SendChatMessageHandlerTests.java`: existing conversation → history loaded via `findByConversationIdOrderByCreatedAtDescIdDesc` with `Limit.of(historyMaxTurns)`, reversed to chronological order, followed by the new user turn; new turns appended to the existing conversation and `lastActivityAt` updated; unknown id or another owner (`findByIdAndOwnerId` empty) → `ConversationNotFound` with no provider call and no save; history longer than the cap → only the most recent `historyMaxTurns` turns sent
 
 ### Implementation for User Story 2
 
-- [ ] T022 [US2] In `handlers/commands/impl/SendChatMessageHandlerImpl.java`: when `conversationId` is present, load it with `findByIdAndOwnerId(conversationId, userId)` (empty → `ConversationNotFound`), load the last `chatbot.history-max-turns` messages, reverse them, map `ChatRole` → `ChatProvider.Role`, and append the new turns to that conversation instead of creating one (inject the cap with `@Value("${chatbot.history-max-turns}")`)
-- [ ] T023 [US2] Add `@chatbot-live` scenarios to `src/test/resources/features/Chatbot.feature` (steps in `api/steps/ChatSteps.java`): follow-up uses the earlier turn (answer contains the name given before); a second registered user using the first user's conversation id → 400 with code 3002; a random UUID → 400 with code 3002
+- [X] T022 [US2] In `handlers/commands/impl/SendChatMessageHandlerImpl.java`: when `conversationId` is present, load it with `findByIdAndOwnerId(conversationId, userId)` (empty → `ConversationNotFound`), load the last `chatbot.history-max-turns` messages, reverse them, map `ChatRole` → `ChatProvider.Role`, and append the new turns to that conversation instead of creating one (inject the cap with `@Value("${chatbot.history-max-turns}")`)
+- [X] T023 [US2] Add `@chatbot-live` scenarios to `src/test/resources/features/Chatbot.feature` (steps in `api/steps/ChatSteps.java`): follow-up uses the earlier turn (answer contains the name given before); a second registered user using the first user's conversation id → 400 with code 3002; a random UUID → 400 with code 3002
 
 **Checkpoint**: US1 and US2 pass together.
 
@@ -80,14 +80,14 @@ startup fails naming the setting.
 
 ### Tests for User Story 3
 
-- [ ] T024 [P] [US3] Create `api/GlobalExceptionHandlerTests.java`: a `NoResourceFoundException` (and a `NoHandlerFoundException`) passed to the new handler method → 404 `ErrorResponse` with code 1004 (stub the session via `SessionContextHolder` as the existing code requires); first confirm with a quick run which of the two exceptions Spring MVC 7 raises for an unmapped `/api/private/**` route and keep the assertion on that one at least (research R4)
-- [ ] T025 [P] [US3] Add to `providers/GeminiChatProviderTests.java`: constructing the provider with a blank or null key throws `IllegalStateException` whose message contains `google.ai.api-key` and `GOOGLE_AI_API_KEY` and does not contain any key value
+- [X] T024 [P] [US3] Create `api/GlobalExceptionHandlerTests.java`: a `NoResourceFoundException` (and a `NoHandlerFoundException`) passed to the new handler method → 404 `ErrorResponse` with code 1004 (stub the session via `SessionContextHolder` as the existing code requires); first confirm with a quick run which of the two exceptions Spring MVC 7 raises for an unmapped `/api/private/**` route and keep the assertion on that one at least (research R4)
+- [X] T025 [P] [US3] Add to `providers/GeminiChatProviderTests.java`: constructing the provider with a blank or null key throws `IllegalStateException` whose message contains `google.ai.api-key` and `GOOGLE_AI_API_KEY` and does not contain any key value
 
 ### Implementation for User Story 3
 
-- [ ] T026 [US3] Add `@ExceptionHandler({NoResourceFoundException.class, NoHandlerFoundException.class})` to `api/GlobalExceptionHandler.java` returning `ResponseEntity.status(NOT_FOUND).body(ErrorResponse.of(RESOURCE_NOT_FOUND, correlationId))`, declared so it wins over the `Throwable` handler
-- [ ] T027 [US3] In `providers/gemini/GeminiChatProvider.java` constructor: if `google.ai.api-key` is null or blank, throw `IllegalStateException("google.ai.api-key (GOOGLE_AI_API_KEY) must be set when features.chatbot.enabled=true")`
-- [ ] T028 [US3] Add a `@chatbot-disabled` scenario to `src/test/resources/features/Chatbot.feature`: logged-in user posts a message → 404 with code 1004; create `src/test/resources/junit-platform.properties` with `cucumber.filter.tags=not @chatbot-live`, and make the `e2eTest` task in `build.gradle.kts` forward `cucumber.filter.tags` (add it to the `listOf("host", "port")` forwarding list)
+- [X] T026 [US3] Add `@ExceptionHandler({NoResourceFoundException.class, NoHandlerFoundException.class})` to `api/GlobalExceptionHandler.java` returning `ResponseEntity.status(NOT_FOUND).body(ErrorResponse.of(RESOURCE_NOT_FOUND, correlationId))`, declared so it wins over the `Throwable` handler
+- [X] T027 [US3] In `providers/gemini/GeminiChatProvider.java` constructor: if `google.ai.api-key` is null or blank, throw `IllegalStateException("google.ai.api-key (GOOGLE_AI_API_KEY) must be set when features.chatbot.enabled=true")`
+- [X] T028 [US3] Add a `@chatbot-disabled` scenario to `src/test/resources/features/Chatbot.feature`: logged-in user posts a message → 404 with code 1004; create `src/test/resources/junit-platform.properties` with `cucumber.filter.tags=not @chatbot-live`, and make the `e2eTest` task in `build.gradle.kts` forward `cucumber.filter.tags` (add it to the `listOf("host", "port")` forwarding list)
 
 **Checkpoint**: `./gradlew e2eTest` against an app started with defaults runs only `@chatbot-disabled` and the
 existing scenarios, and passes — this is what CI runs.
@@ -100,24 +100,24 @@ or raw error in the body and nothing saved.
 
 ### Tests for User Story 4
 
-- [ ] T029 [P] [US4] Extend `handlers/commands/SendChatMessageHandlerTests.java`: null, blank and 4,001-character messages → `InvalidMessage` with no repository or provider interaction; 4,000 characters accepted; `Unavailable` → `AssistantUnavailable` and `NoAnswer` → `NoAnswer`, both with no `save` (also for a new conversation: nothing created)
-- [ ] T030 [P] [US4] Extend `providers/GeminiChatProviderTests.java`: 400 with `API_KEY_INVALID`, 401 and 403 → `Unavailable(AUTH)`; 429 → `Unavailable(QUOTA)`; 500/503 → `Unavailable(SERVICE_ERROR)`; I/O timeout (`ResourceAccessException`) → `Unavailable(TIMEOUT)`; `promptFeedback.blockReason` or `finishReason = SAFETY` → `NoAnswer(BLOCKED)`; no candidates or no text parts → `NoAnswer(EMPTY)`
+- [X] T029 [P] [US4] Extend `handlers/commands/SendChatMessageHandlerTests.java`: null, blank and 4,001-character messages → `InvalidMessage` with no repository or provider interaction; 4,000 characters accepted; `Unavailable` → `AssistantUnavailable` and `NoAnswer` → `NoAnswer`, both with no `save` (also for a new conversation: nothing created)
+- [X] T030 [P] [US4] Extend `providers/GeminiChatProviderTests.java`: 400 with `API_KEY_INVALID`, 401 and 403 → `Unavailable(AUTH)`; 429 → `Unavailable(QUOTA)`; 500/503 → `Unavailable(SERVICE_ERROR)`; I/O timeout (`ResourceAccessException`) → `Unavailable(TIMEOUT)`; `promptFeedback.blockReason` or `finishReason = SAFETY` → `NoAnswer(BLOCKED)`; no candidates or no text parts → `NoAnswer(EMPTY)`
 
 ### Implementation for User Story 4
 
-- [ ] T031 [US4] In `handlers/commands/impl/SendChatMessageHandlerImpl.java`: validate before any I/O — null/blank → `InvalidMessage("message is required")`, longer than `MAX_MESSAGE_LENGTH = 4_000` (private static final constant) → `InvalidMessage("message is too long")`
-- [ ] T032 [US4] In `providers/gemini/GeminiChatProvider.java`: map HTTP errors with `RestClient` `onStatus`/exception handling and timeouts to `Unavailable(reason)` and blocked/empty candidates to `NoAnswer(reason)` per T030; log `model`, status code and reason at WARN, never bodies or the key
-- [ ] T033 [US4] Add `@chatbot-live` scenarios to `src/test/resources/features/Chatbot.feature`: blank message → 400 code 3001; message of 4,001 characters → 400 code 3001 (use `{String:4001}`)
+- [X] T031 [US4] In `handlers/commands/impl/SendChatMessageHandlerImpl.java`: validate before any I/O — null/blank → `InvalidMessage("message is required")`, longer than `MAX_MESSAGE_LENGTH = 4_000` (private static final constant) → `InvalidMessage("message is too long")`
+- [X] T032 [US4] In `providers/gemini/GeminiChatProvider.java`: map HTTP errors with `RestClient` `onStatus`/exception handling and timeouts to `Unavailable(reason)` and blocked/empty candidates to `NoAnswer(reason)` per T030; log `model`, status code and reason at WARN, never bodies or the key
+- [X] T033 [US4] Add `@chatbot-live` scenarios to `src/test/resources/features/Chatbot.feature`: blank message → 400 code 3001; message of 4,001 characters → 400 code 3001 (use `{String:4001}`)
 
 **Checkpoint**: all stories pass; error bodies never contain the key.
 
 ## Phase 7: Polish & Cross-Cutting
 
-- [ ] T034 Run `./gradlew build` and fix every Checkstyle finding (line length 120, `NeedBraces`, `MagicNumber`, constants `UPPER_SNAKE_CASE`, no star or unused imports, newline at EOF); report any warning
-- [ ] T035 Verify the `gemini-flash-latest` alias against the live API (research R2); if it does not resolve, set the current stable Flash model in `src/main/resources/application.yaml` and in `specs/011-gemini-chatbot/contracts/chat-api.md`
-- [ ] T036 Run quickstart.md end to end: defaults → 404; flag on without key → startup fails; flag on with key → two-turn conversation; `./gradlew e2eTest` and `./gradlew e2eTest "-Dcucumber.filter.tags=@chatbot-live"`
-- [ ] T037 [P] Grep the codebase, test output and app log for the key value and for `?key=` to confirm the key never appears (SC-004)
-- [ ] T038 [P] Document the chatbot settings (flag, `GOOGLE_AI_API_KEY`, model) and the `@chatbot-live` tag in `CLAUDE.md` (Security/Testing sections)
+- [X] T034 Run `./gradlew build` and fix every Checkstyle finding (line length 120, `NeedBraces`, `MagicNumber`, constants `UPPER_SNAKE_CASE`, no star or unused imports, newline at EOF); report any warning
+- [ ] T035 (blocked: this environment cannot reach Google; verify with a real key) Verify the `gemini-flash-latest` alias against the live API (research R2); if it does not resolve, set the current stable Flash model in `src/main/resources/application.yaml` and in `specs/011-gemini-chatbot/contracts/chat-api.md`
+- [ ] T036 (partial: defaults → 404, no key → startup fails and validation/error paths verified on a local run; `@chatbot-live` not run, needs a real key) Run quickstart.md end to end: defaults → 404; flag on without key → startup fails; flag on with key → two-turn conversation; `./gradlew e2eTest` and `./gradlew e2eTest "-Dcucumber.filter.tags=@chatbot-live"`
+- [X] T037 [P] Grep the codebase, test output and app log for the key value and for `?key=` to confirm the key never appears (SC-004)
+- [X] T038 [P] Document the chatbot settings (flag, `GOOGLE_AI_API_KEY`, model) and the `@chatbot-live` tag in `CLAUDE.md` (Security/Testing sections)
 - [ ] T039 Write the PR description calling out: the new ArchUnit rule and why; unknown routes now return 404 instead of 400; no new dependencies; `Closes #11`
 
 ## Dependencies & Execution Order

@@ -37,7 +37,7 @@ Available only when `features.chatbot.enabled=true`. Requires `Authorization: Be
 | 400  | 3002   | `CHAT_CONVERSATION_NOT_FOUND` | Unknown `conversationId`, or it belongs to another user    |
 | 400  | 3003   | `CHAT_ASSISTANT_UNAVAILABLE`  | AI service rejected the key, timed out, quota, other error |
 | 400  | 3004   | `CHAT_NO_ANSWER`              | AI service returned an empty or safety-blocked answer      |
-| 401  | 401    | `UNAUTHORIZED`                | Missing or invalid JWT (existing behavior)                 |
+| 403  | —      | —                             | Missing or invalid JWT (existing behavior of every `/api/private/**` route) |
 | 404  | 1004   | `RESOURCE_NOT_FOUND`          | Feature flag off (route not mapped), as any unknown route  |
 
 Example:

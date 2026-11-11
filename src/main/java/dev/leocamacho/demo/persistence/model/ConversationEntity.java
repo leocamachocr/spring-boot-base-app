@@ -1,17 +1,13 @@
 package dev.leocamacho.demo.persistence.model;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -26,8 +22,6 @@ public class ConversationEntity {
     private Instant createdAt;
     @Column(name = "last_activity_at", nullable = false)
     private Instant lastActivityAt;
-    @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL)
-    private List<ChatMessageEntity> messages = new ArrayList<>();
 
     public ConversationEntity() {
     }
@@ -36,11 +30,6 @@ public class ConversationEntity {
         this.ownerId = ownerId;
         this.createdAt = createdAt;
         this.lastActivityAt = createdAt;
-    }
-
-    public void addMessage(ChatMessageEntity message) {
-        message.setConversation(this);
-        messages.add(message);
     }
 
     public UUID getId() {
@@ -65,9 +54,5 @@ public class ConversationEntity {
 
     public void setLastActivityAt(Instant lastActivityAt) {
         this.lastActivityAt = lastActivityAt;
-    }
-
-    public List<ChatMessageEntity> getMessages() {
-        return messages;
     }
 }

@@ -56,7 +56,7 @@ Each entry records a decision, why it was taken, and what else was considered.
 ## R4. "Not found" when the flag is off
 
 - **Finding**: An unmapped route under `/api/private/**` behaves like this today:
-  - Unauthenticated: the security chain answers 401 before routing — same as any other private route, so the
+  - Unauthenticated: the security chain answers 403 (verified) before routing — same as any other private route, so the
     chatbot route is indistinguishable from a non-existent one.
   - Authenticated: Spring MVC raises `NoResourceFoundException` (or `NoHandlerFoundException`), and
     `GlobalExceptionHandler.handleException(Throwable)` turns it into **400 `UNKNOWN_ERROR`**, not 404.
