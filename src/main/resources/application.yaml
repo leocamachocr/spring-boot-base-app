@@ -15,3 +15,15 @@ spring:
     change-log: classpath:/db/changelog/db.changelog-master.xml
 jwt:
   secret: KXiUPknkoVDCHdNrrYnxmA5oQLbv+LE7eHG8vkk71fjEPq0lmlZKwBhUVLUqKSmGam8P4kWxXKTGCDRgpZ5BMA==
+features:
+  chatbot:
+    # Overridable with FEATURES_CHATBOT_ENABLED. When false, no chatbot bean is created and no API key is needed.
+    enabled: false
+google:
+  ai:
+    api-key: ${GOOGLE_AI_API_KEY:}
+    model: gemini-flash-latest
+    base-url: https://generativelanguage.googleapis.com/v1beta
+    timeout: 30s
+chatbot:
+  history-max-turns: 20

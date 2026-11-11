@@ -75,6 +75,13 @@ public class StructureValidationTests {
                     .andShould().notBeAnnotatedWith(Repository.class)
                     .as("Repositories should be Spring Data interfaces without @Repository");
 
+    @ArchTest
+    static final ArchRule PROVIDER_IMPLEMENTATIONS_ARE_HIDDEN =
+            noClasses().that().resideOutsideOfPackage(APP + ".providers..")
+                    .and().resideOutsideOfPackage(APP + ".tests..")
+                    .should().dependOnClassesThat().resideInAPackage(APP + ".providers.gemini..")
+                    .as("Gemini types must stay inside providers; other layers use the ChatProvider interface");
+
 
     @Test
     public void givenApplicationClassesThenNoLayerViolationsShouldExist() {

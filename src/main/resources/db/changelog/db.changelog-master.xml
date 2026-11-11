@@ -11,5 +11,9 @@ http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
         <sqlFile path="db/changelog/002-admin-user.sql"/>
     </changeSet>
 
+    <changeSet id="3" author="lcamacho">
+        <sqlFile path="db/changelog/004-create-chat-tables.sql"/>
+    </changeSet>
+
 
 </databaseChangeLog>
