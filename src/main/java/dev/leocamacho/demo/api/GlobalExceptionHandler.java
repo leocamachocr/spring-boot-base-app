@@ -9,7 +9,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+import static dev.leocamacho.demo.exception.ErrorCode.RESOURCE_NOT_FOUND;
 import static dev.leocamacho.demo.exception.ErrorCode.UNKNOWN_ERROR;
 
 @RestControllerAdvice
@@ -26,6 +29,15 @@ public class GlobalExceptionHandler {
         );
         LOGGER.error("A BusinessException occurred", ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+    }
+
+    @ExceptionHandler({NoResourceFoundException.class, NoHandlerFoundException.class})
+    public ResponseEntity<ErrorResponse> handleNotFound(Exception ex) {
+        ErrorResponse response = ErrorResponse.of(
+                RESOURCE_NOT_FOUND,
+                SessionContextHolder.getSession().correlationId()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
     @ExceptionHandler(Throwable.class)

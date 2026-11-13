@@ -50,6 +50,7 @@ tasks.test {
 
 // Black-box E2E tests against an already running app; not part of `build`.
 // Target with -Dhost=... -Dport=... (defaults: http://localhost:8080).
+// -Dcucumber.filter.tags=... overrides the default tag filter in src/test/resources/junit-platform.properties.
 tasks.register<Test>("e2eTest") {
     description = "Runs Cucumber E2E tests against a running instance of the app."
     group = "verification"
@@ -58,7 +59,7 @@ tasks.register<Test>("e2eTest") {
     useJUnitPlatform {
         includeEngines("junit-platform-suite")
     }
-    listOf("host", "port").forEach { key ->
+    listOf("host", "port", "cucumber.filter.tags").forEach { key ->
         System.getProperty(key)?.let { systemProperty(key, it) }
     }
     outputs.upToDateWhen { false }

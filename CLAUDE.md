@@ -59,7 +59,15 @@ Each use case has:
   - Queries (`handlers/queries/`): `Result query(...)` with plain params; impl is `*QueryImpl` in `queries/impl/`. The ArchUnit impl rule only covers `commands.impl`, so query impls are convention-only (the no-entities rule covers both).
 - The impl annotated `@Component`. `Result` variants carry their own records (e.g. `Success(UUID id, String name, String email)`); impls map entities to them explicitly — entities never leave the handler.
 
-Expected business outcomes (invalid fields, email exists, invalid credentials, user not found) are `Result` variants. Controllers pattern-match exhaustively and return `ResponseEntity`: success → 200 with an `api.responses` DTO, expected errors → 400 with `ErrorResponse.of(ErrorCode, correlationId, params...)`. `BusinessException` (unchecked, `ErrorCode` + Builder) is only for rolling back an operation in progress; `GlobalExceptionHandler` (the single `@RestControllerAdvice`) maps it to 500 and any other `Throwable` to 400 `UNKNOWN_ERROR`.
+Expected business outcomes (invalid fields, email exists, invalid credentials, user not found) are `Result` variants. Controllers pattern-match exhaustively and return `ResponseEntity`: success → 200 with an `api.responses` DTO, expected errors → 400 with `ErrorResponse.of(ErrorCode, correlationId, params...)`. `BusinessException` (unchecked, `ErrorCode` + Builder) is only for rolling back an operation in progress; `GlobalExceptionHandler` (the single `@RestControllerAdvice`) maps it to 500, unknown routes (`NoResourceFoundException`/`NoHandlerFoundException`) to 404 `RESOURCE_NOT_FOUND`, and any other `Throwable` to 400 `UNKNOWN_ERROR`.
+
+### Chatbot (feature-flagged)
+- `POST /api/private/chat/messages` (`ChatController` → `SendChatMessageHandler` → `ChatProvider`). Gemini is called over REST with `RestClient` in `providers.gemini`; an ArchUnit rule forbids depending on `providers.gemini` from outside `providers`.
+- Off by default: `features.chatbot.enabled` (`FEATURES_CHATBOT_ENABLED`). Every chatbot bean is `@ConditionalOnProperty`, so with the flag off the route answers 404 and no key is needed. With the flag on, `GOOGLE_AI_API_KEY` is mandatory (startup fails without it). Both can live in a git-ignored `.env` at the project root (imported by `application.yaml`; see `.env.example`). Model: `google.ai.model` (default `gemini-3.5-flash`).
+- On this Windows machine Avast re-signs HTTPS traffic, so the JDK rejects Google's certificate (`PKIX path building failed`; Gradle dependency downloads fail the same way). Run the app with `-Djavax.net.ssl.trustStoreType=Windows-ROOT`, and Gradle with `--offline` when the cache is enough.
+- History lives in `chat_conversations` / `chat_messages`; Gemini calls run outside any transaction and all turns of a message are saved together only on an answer.
+- Tools: every `ChatTool` bean (`handlers.tools`) is offered to the model. On `ToolCallRequested` the handler runs the tool for the session user, sends `ToolCalls` + `ToolResults` back, and repeats (max 5 rounds). Tool turns are stored as JSON (`TOOL_CALL` / `TOOL_RESULT`), including Gemini's `thoughtSignature`, which must be echoed back. The answer lists them in `toolCalls`. The only tool so far is `CalculatorTool` (`calculate`: add, subtract, multiply, divide, sqrt). Tools return `{"error": ...}` instead of throwing.
+- The free tier of the Gemini API allows about 20 requests per day per model, and every tool round costs one more request. A 429 surfaces as 3003 with `reason=QUOTA` in the log.
 
 ### Security
 - Routes under `/api/private/**` require a JWT; routes under `/api/public/**` are open.
@@ -78,6 +86,7 @@ Two test suites:
    - These are **black-box tests against a running server** (no `@SpringBootTest`): start the app with `./gradlew bootRun` first. Target defaults to `http://localhost:8080`, overridable with `-Dhost=` / `-Dport=` (forwarded to the test JVM by the `e2eTest` task, read in `ApiVerbs`).
    - They run **only** via `./gradlew e2eTest` (JUnit Platform `@Suite` + `cucumber-junit-platform-engine`); the `test` task excludes the `cucumber` and `junit-platform-suite` engines, so `./gradlew build` never runs them. This split is intentional: CI (`.github/workflows/ci.yml`, on PRs and pushes to `main`) runs a `build` job, then an `e2e` job that starts the app with an in-memory H2 (`SPRING_DATASOURCE_URL`, since `application.yaml` points to a Windows path) and runs `e2eTest`. HTML report: `build/reports/cucumber/cucumber.html` (uploaded as the `e2e-reports` artifact in CI).
    - Scenarios must not depend on data left by previous runs: CI always starts from an empty database.
+   - Scenarios tagged `@chatbot-live` need the app running with the chatbot flag on and a real `GOOGLE_AI_API_KEY`; they are excluded by default (`cucumber.filter.tags=not @chatbot-live` in `src/test/resources/junit-platform.properties`). Run them with `./gradlew e2eTest "-Dcucumber.filter.tags=@chatbot-live"`. CI runs only the default set, including `@chatbot-disabled`.
    - REST-Assured must be 6.x: Spring Boot 4 forces Groovy 5, and REST-Assured 5.x (Groovy 4) fails with an NPE on GET requests.
 
 Feature files support a `{String:N}` placeholder (generates a random N-char string) and `{String:N:$var}` to save the value in a named variable for reuse as `{$var}`.
@@ -101,5 +110,5 @@ Issues are processed by `/speckit-issue <N|next>`, driven by labels: `speckit` (
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan:
-`specs/005-reference-architecture-migration/plan.md`
+`specs/011-gemini-chatbot/plan.md`
 <!-- SPECKIT END -->

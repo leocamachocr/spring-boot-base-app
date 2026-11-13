@@ -28,6 +28,10 @@ public class Path {
         static class User {
             static final Path LOGGED_USER = new Path("/users/current", Type.PRIVATE);
         }
+
+        static class Chat {
+            static final Path MESSAGES = new Path("/chat/messages", Type.PRIVATE);
+        }
     }
 
 }
